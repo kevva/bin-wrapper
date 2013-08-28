@@ -35,9 +35,13 @@ bin.check('--version', function (works) {
         console.log('Binary downloaded and passed the test!')
     }
 });
+```
 
+Get the path to your binary with `bin.path`.
+
+```js
 console.log(bin.path);
-=> path/to/vendor/gifsicle
+// => path/to/vendor/gifsicle
 ```
 
 ## API
