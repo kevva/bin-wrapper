@@ -48,9 +48,8 @@ console.log(bin.path);
 
 ### .check(cmd, cb)
 
-Check if a binary is present and working. If it isn't, download and test it. 
-The `cmd` argument is a command to run your binary with matching it's output 
-with the name.
+Check if a binary is present and working. If it isn't, download and test it 
+running your binary with `cmd` to match the output against `name`.
 
 ## License
 
