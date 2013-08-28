@@ -97,7 +97,10 @@ BinWrapper.prototype._download = function (url, dest, cb) {
         var done = this.async();
         var get = download(val, dest);
 
-        get.on('close', done);
+        get.on('close', function () {
+            fs.chmodSync(dest, '0755');
+            done();
+        });
     }, cb);
 };
 
