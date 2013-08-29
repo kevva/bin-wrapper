@@ -34,6 +34,8 @@ function BinWrapper(opts) {
  */
 
 BinWrapper.prototype.check = function (cmd, cb) {
+    var self = this;
+
     if (!cb && mout.lang.isFunction(cmd)) {
         cb = cmd;
         cmd = ['--help'];
@@ -42,16 +44,13 @@ BinWrapper.prototype.check = function (cmd, cb) {
     cmd = cmd;
     cmd = Array.isArray(cmd) ? cmd : [cmd];
 
-    var self = this;
-    var get = this._download(this.url, this.dest, function () {
-        return self._test(cmd, cb);
-    });
-
     if (fs.existsSync(this.path)) {
         return self._test(cmd, cb);
     }
 
-    return get;
+    this._download(this.url, this.dest, function () {
+        return self._test(cmd, cb);
+    });
 };
 
 /**
