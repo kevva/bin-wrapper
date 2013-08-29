@@ -8,7 +8,7 @@ var path = require('path');
 var spawn = require('child_process').spawn;
 
 /**
- * Initialize BinWrapper with opts
+ * Initialize BinWrapper with options
  *
  * @param {Object} opts
  * @api public
@@ -133,7 +133,7 @@ BinWrapper.prototype._parse = function (opts) {
 
     required.forEach(function (val) {
         if (!mout.object.hasOwn(opts, val)) {
-            throw new Error('A valid ' + val + ' is required');
+            throw new Error(val + ' option is required');
         }
     });
 
