@@ -48,8 +48,8 @@ console.log(bin.path);
 
 ### .check(cmd, cb)
 
-Check if a binary is present and working. If it isn't, download and test it 
-running your binary with `cmd` to match the output against `name`.
+Check if a binary is present and working. If it isn't, download and test it by 
+running the binary with `cmd` and see if it exits correctly.
 
 ## License
 

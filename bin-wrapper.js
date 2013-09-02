@@ -54,28 +54,28 @@ BinWrapper.prototype.check = function (cmd, cb) {
 };
 
 /**
- * Test if a binary returns the expected output which is
- * the binary name
+ * Test if a binary is working by checking its exit code
  *
  * @param {Array} cmd
  * @param {Function} cb
+ * @api private
  */
 
 BinWrapper.prototype._test = function (cmd, cb) {
-    var self = this;
     var working;
     var bin = spawn(this.path, cmd);
 
-    var test = bin.stdout.on('data', function (data) {
-        data = new Buffer(data).toString().toLowerCase();
-        working = data.indexOf(self.name) !== -1 ? true : false;
-    });
-
-    test.on('close', function () {
+    bin.on('error', function () {
+        working = false;
         return cb(working);
     });
 
-    return test;
+    bin.on('exit', function (code) {
+        working = code === 0 ? true : false;
+        return cb(working);
+    });
+
+    return bin;
 };
 
 /**
