@@ -3,9 +3,11 @@
 var download = require('download');
 var each = require('async-foreach').forEach;
 var fs = require('fs');
+var isbin = require('isbin');
 var mout = require('mout');
 var path = require('path');
 var spawn = require('child_process').spawn;
+var which = require('which');
 
 /**
  * Initialize BinWrapper with options
@@ -45,6 +47,11 @@ BinWrapper.prototype.check = function (cmd, cb) {
     cmd = Array.isArray(cmd) ? cmd : [cmd];
 
     if (fs.existsSync(this.path)) {
+        return self._test(cmd, cb);
+    }
+
+    if (isbin(this.bin)) {
+        self.path = which.sync(self.bin);
         return self._test(cmd, cb);
     }
 
