@@ -46,6 +46,7 @@ var bin = new Bin(opts);
 describe('BinWrapper.check()', function () {
     it('should download and verify a binary', function (cb) {
         bin.check(function (w) {
+            console.log(w);
             cb(assert.equal(w, true));
         });
     });

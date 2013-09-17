@@ -95,19 +95,12 @@ BinWrapper.prototype._test = function (cmd, cb) {
  */
 
 BinWrapper.prototype._download = function (url, dest, cb) {
-    url = Array.isArray(url) ? url : [url];
+    var get = download(url, dest);
+    var file = path.join(dest, path.basename(url));
 
-    each(url, function (val) {
-        dest = path.join(dest, path.basename(val));
-
-        var done = this.async();
-        var get = download(val, dest);
-
-        get.on('close', function () {
-            fs.chmodSync(dest, '0755');
-            done();
-        });
-    }, cb);
+    get.on('close', function () {
+        fs.chmod(file, '0755', cb);
+    });
 };
 
 /**
