@@ -1,9 +1,11 @@
 'use strict';
 
 var download = require('download');
+var exec = require('child_process').exec;
 var fs = require('fs');
 var isbin = require('isbin');
 var mout = require('mout');
+var os = require('os');
 var path = require('path');
 var spawn = require('child_process').spawn;
 var which = require('which');
@@ -24,6 +26,7 @@ function BinWrapper(opts) {
     this.path = path.join(this.dest, this.bin);
     this.url = this.opts.url;
     this.source = this.opts.source;
+    this.build = this.opts.build;
 }
 
 /**
@@ -56,6 +59,16 @@ BinWrapper.prototype.check = function (cmd, cb) {
 
     this._download(this.url, this.dest, function () {
         return self._test(cmd, cb);
+    });
+};
+
+BinWrapper.prototype.build = function () {
+    var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
+    var tmp = path.join(tmpDir, this.name);
+    var get = download(this.source, tmpDir, { extract: true, strip: 1 });
+
+    get.on('end', function () {
+        exec(this.build, { cwd: tmp });
     });
 };
 
