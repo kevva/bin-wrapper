@@ -1,7 +1,6 @@
 'use strict';
 
 var download = require('download');
-var each = require('async-foreach').forEach;
 var fs = require('fs');
 var isbin = require('isbin');
 var mout = require('mout');
