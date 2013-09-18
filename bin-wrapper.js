@@ -54,7 +54,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
         return self._test(cmd, cb);
     }
 
-    this._download(this.url, this.dest, function () {
+    download(this.url, this.dest, { mode: '0755' }).on('close', function () {
         return self._test(cmd, cb);
     });
 };
@@ -82,24 +82,6 @@ BinWrapper.prototype._test = function (cmd, cb) {
     });
 
     return bin;
-};
-
-/**
- * Download an array files
- *
- * @param {String|Array} url
- * @param {String} dest
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype._download = function (url, dest, cb) {
-    var get = download(url, dest);
-    var file = path.join(dest, path.basename(url));
-
-    get.on('close', function () {
-        fs.chmod(file, '0755', cb);
-    });
 };
 
 /**
