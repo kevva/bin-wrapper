@@ -25,8 +25,8 @@ function BinWrapper(opts) {
     this.dest = this.opts.path;
     this.path = path.join(this.dest, this.bin);
     this.url = this.opts.url;
-    this.source = this.opts.source;
-    this.build = this.opts.build;
+    this.src = this.opts.src;
+    this.buildScript = this.opts.buildScript;
 }
 
 /**
@@ -57,18 +57,28 @@ BinWrapper.prototype.check = function (cmd, cb) {
         return self._test(cmd, cb);
     }
 
-    this._download(this.url, this.dest, function () {
+    download(this.url, this.dest, { mode: '0755' }).on('close', function () {
         return self._test(cmd, cb);
     });
 };
 
+/**
+ * Build a binary
+ *
+ * @api public
+ */
+
 BinWrapper.prototype.build = function () {
     var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
     var tmp = path.join(tmpDir, this.name);
-    var get = download(this.source, tmpDir, { extract: true, strip: 1 });
+    var get = download(this.src, tmp, { extract: true, strip: 1 });
 
-    get.on('end', function () {
-        exec(this.build, { cwd: tmp });
+    if (!isbin('make')) {
+        throw new Error('failed to find make');
+    }
+
+    return get.on('end', function () {
+        exec(this.buildScript, { cwd: tmp });
     });
 };
 
@@ -95,24 +105,6 @@ BinWrapper.prototype._test = function (cmd, cb) {
     });
 
     return bin;
-};
-
-/**
- * Download an array files
- *
- * @param {String|Array} url
- * @param {String} dest
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype._download = function (url, dest, cb) {
-    var get = download(url, dest);
-    var file = path.join(dest, path.basename(url));
-
-    get.on('close', function () {
-        fs.chmod(file, '0755', cb);
-    });
 };
 
 /**
