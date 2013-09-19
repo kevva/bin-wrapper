@@ -1,9 +1,11 @@
 'use strict';
 
 var download = require('download');
+var exec = require('child_process').exec;
 var fs = require('fs');
 var isbin = require('isbin');
 var mout = require('mout');
+var os = require('os');
 var path = require('path');
 var spawn = require('child_process').spawn;
 var which = require('which');
@@ -23,7 +25,8 @@ function BinWrapper(opts) {
     this.dest = this.opts.path;
     this.path = path.join(this.dest, this.bin);
     this.url = this.opts.url;
-    this.source = this.opts.source;
+    this.src = this.opts.src;
+    this.buildScript = this.opts.buildScript;
 }
 
 /**
@@ -56,6 +59,31 @@ BinWrapper.prototype.check = function (cmd, cb) {
 
     download(this.url, this.dest, { mode: '0755' }).on('close', function () {
         return self._test(cmd, cb);
+    });
+};
+
+BinWrapper.prototype.build = function (cb) {
+    var self = this;
+    var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
+    var tmp = path.join(tmpDir, this.name);
+    var get = download(this.src, tmp, { extract: true, strip: '1' });
+
+    if (!cb || !mout.lang.isFunction(cb)) {
+        cb = function () {};
+    }
+
+    if (!isbin('make')) {
+        throw new Error('failed to find make');
+    }
+
+    return get.on('close', function () {
+        exec(self.buildScript, { cwd: tmp }, function (err) {
+            if (err) {
+                return cb(err);
+            }
+
+            return cb();
+        });
     });
 };
 
