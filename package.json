@@ -1,6 +1,6 @@
 {
   "name": "bin-wrapper",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies",
   "keywords": [
     "bin",
