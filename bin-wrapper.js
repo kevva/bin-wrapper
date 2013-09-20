@@ -27,6 +27,11 @@ function BinWrapper(opts) {
     this.url = this.opts.url;
     this.src = this.opts.src;
     this.buildScript = this.opts.buildScript;
+    this.proxy = process.env.http_proxy ||
+         process.env.HTTP_PROXY ||
+         process.env.https_proxy ||
+         process.env.HTTPS_PROXY ||
+         null;
 }
 
 /**
@@ -57,7 +62,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
         return self._test(cmd, cb);
     }
 
-    download(this.url, this.dest, { mode: '0755' }).on('close', function () {
+    download(this.url, this.dest, { mode: '0755', proxy: this.proxy }).on('close', function () {
         return self._test(cmd, cb);
     });
 };
@@ -66,7 +71,7 @@ BinWrapper.prototype.build = function (cb) {
     var self = this;
     var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
     var tmp = path.join(tmpDir, this.name);
-    var get = download(this.src, tmp, { extract: true, strip: '1' });
+    var get = download(this.src, tmp, { extract: true, strip: '1', proxy: this.proxy });
 
     if (!cb || !mout.lang.isFunction(cb)) {
         cb = function () {};

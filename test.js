@@ -3,12 +3,16 @@
 
 var assert = require('assert');
 var Bin = require('./bin-wrapper');
+var fs = require('fs');
 var path = require('path');
 
 var opts = {
     name: 'gifsicle',
     bin: 'gifsicle',
     path: path.join(__dirname, 'tmp'),
+    src: 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz',
+    buildScript: './configure --disable-gifview --disable-gifdiff --bindir="' + path.join(__dirname, '../tmp') +
+                 '" && make install',
     platform: {
         darwin: {
             url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/osx/gifsicle'
@@ -40,14 +44,17 @@ var opts = {
         }
     }
 };
-
 var bin = new Bin(opts);
 
 describe('BinWrapper.check()', function () {
     it('should download and verify a binary', function (cb) {
         bin.check(function (w) {
-            console.log(w);
             cb(assert.equal(w, true));
+        });
+    });
+    it('should download source and build binary', function (cb) {
+        bin.check(function () {
+            fs.stat(bin.path, cb);
         });
     });
 });
