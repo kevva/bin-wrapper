@@ -67,6 +67,13 @@ BinWrapper.prototype.check = function (cmd, cb) {
     });
 };
 
+/**
+ * Download source and build a binary
+ *
+ * @param {Function} cb
+ * @api public
+ */
+
 BinWrapper.prototype.build = function (cb) {
     var self = this;
     var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
