@@ -17,6 +17,9 @@ var opts = {
     bin: 'gifsicle',
     path: __dirname + '/vendor',
     url: 'http://url/to/gifsicle',
+    src: 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz',
+    buildScript: './configure --disable-gifview --disable-gifdiff --bindir="' + __dirname + '../vendor' +
+                 '" && make install',
     platform: {
         win32: {
             bin: 'gifsicle.exe',
@@ -27,13 +30,15 @@ var opts = {
         }
     }
 }
-
 var bin = new Bin(opts)
 
 bin.check('--version', function (works) {
-    if (works) {
-        console.log('Binary downloaded and passed the test!')
+    if (!works) {
+        console.log('Pre-build test failed, compiling from source');
+        return bin.build();
     }
+
+    console.log('Binary downloaded and passed the test');
 });
 ```
 
