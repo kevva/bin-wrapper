@@ -51,6 +51,11 @@ console.log(bin.path);
 Check if a binary is present and working. If it isn't, download and test it by 
 running the binary with `cmd` and see if it exits correctly.
 
+### .build(cb)
+
+Download the source archive defined in the `src` property and build it using the 
+build script defined in the `buildScript` property.
+
 ## License
 
 [MIT License](http://en.wikipedia.org/wiki/MIT_License) (c) [Kevin Mårtensson](http://kevinmartensson.com)
