@@ -1,5 +1,7 @@
 # bin-wrapper [![Build Status](https://secure.travis-ci.org/kevva/bin-wrapper.png?branch=master)](http://travis-ci.org/kevva/bin-wrapper)
 
+Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies
+
 ## Getting started
 
 Install with [npm](https://npmjs.org/package/bin-wrapper): `npm install bin-wrapper`
