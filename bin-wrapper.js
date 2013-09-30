@@ -23,7 +23,7 @@ function BinWrapper(opts) {
     this.name = this.opts.name;
     this.bin = this.opts.bin;
     this.dest = this.opts.path;
-    this.path = path.join(this.dest, this.bin);
+    this.path = this._path() || path.join(this.dest, this.bin);
     this.url = this.opts.url;
     this.src = this.opts.src;
     this.buildScript = this.opts.buildScript;
@@ -53,12 +53,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
     cmd = cmd;
     cmd = Array.isArray(cmd) ? cmd : [cmd];
 
-    if (fs.existsSync(this.path)) {
-        return self._test(cmd, cb);
-    }
-
-    if (isbin(this.bin)) {
-        self.path = which.sync(self.bin);
+    if (this._path()) {
         return self._test(cmd, cb);
     }
 
@@ -97,6 +92,26 @@ BinWrapper.prototype.build = function (cb) {
             return cb();
         });
     });
+};
+
+/**
+ * If a binary exists, get its path
+ *
+ * @api private
+ */
+
+BinWrapper.prototype._path = function () {
+    var self = this;
+
+    if (fs.existsSync(path.join(this.dest, this.bin))) {
+        return path.join(self.dest, self.bin);
+    }
+
+    if (isbin(this.bin)) {
+        return which.sync(self.bin);
+    }
+
+    return false;
 };
 
 /**
