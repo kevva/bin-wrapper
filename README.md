@@ -17,11 +17,10 @@ var Bin = require('bin-wrapper');
 var opts = {
     name: 'Gifsicle',
     bin: 'gifsicle',
-    path: __dirname + '/vendor',
+    path: 'vendor',
     url: 'http://url/to/gifsicle',
     src: 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz',
-    buildScript: './configure --disable-gifview --disable-gifdiff --bindir="' + __dirname + '../vendor' +
-                 '" && make install',
+    buildScript: './configure --bindir="vendor" && make install',
     platform: {
         win32: {
             bin: 'gifsicle.exe',
@@ -32,7 +31,7 @@ var opts = {
         }
     }
 }
-var bin = new Bin(opts)
+var bin = new Bin(opts);
 
 bin.check('--version', function (works) {
     if (!works) {
@@ -40,7 +39,7 @@ bin.check('--version', function (works) {
         return bin.build();
     }
 
-    console.log('Binary downloaded and passed the test');
+    console.log('Binary passed the test');
 });
 ```
 
