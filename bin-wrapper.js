@@ -120,7 +120,7 @@ BinWrapper.prototype.build = function (cb) {
         });
     });
 
-    return get.on('close', function () {
+    get.on('close', function () {
         exec(self.buildScript, { cwd: tmp }, function (err) {
             if (err) {
                 return cb(err);
@@ -169,11 +169,9 @@ BinWrapper.prototype._test = function (cmd, cb) {
     });
 
     bin.on('exit', function (code) {
-        working = code === 0 ? true : false;
+        working = code === 0;
         return cb(working);
     });
-
-    return bin;
 };
 
 /**
