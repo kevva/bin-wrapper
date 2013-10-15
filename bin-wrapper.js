@@ -7,6 +7,7 @@ var isbin = require('isbin');
 var mout = require('mout');
 var os = require('os');
 var path = require('path');
+var ProgressBar = require('progress');
 var spawn = require('child_process').spawn;
 var which = require('which');
 
@@ -57,9 +58,27 @@ BinWrapper.prototype.check = function (cmd, cb) {
         return self._test(cmd, cb);
     }
 
-    download(this.url, this.dest, { mode: '0755', proxy: this.proxy }).on('close', function () {
-        return self._test(cmd, cb);
-    });
+    download(this.url, this.dest, { mode: '0755', proxy: this.proxy })
+        .on('response', function (res) {
+            var len = parseInt(res.headers['content-length'], 10);
+            var bar = new ProgressBar('  ' + path.basename(self.url) + ': downloading [:bar] :percent :etas', {
+                complete: '=',
+                incomplete: ' ',
+                width: 20,
+                total: len
+            });
+
+            res.on('data', function (data) {
+                bar.tick(data.length);
+            });
+
+            res.on('end', function () {
+                console.log('\n');
+            });
+        })
+        .on('close', function () {
+            return self._test(cmd, cb);
+        });
 };
 
 /**
@@ -82,6 +101,24 @@ BinWrapper.prototype.build = function (cb) {
     if (!isbin('make')) {
         throw new Error('failed to find make');
     }
+
+    get.on('response', function (res) {
+        var len = parseInt(res.headers['content-length'], 10);
+        var bar = new ProgressBar('  ' + path.basename(self.src) + ': downloading [:bar] :percent :etas', {
+            complete: '=',
+            incomplete: ' ',
+            width: 20,
+            total: len
+        });
+
+        res.on('data', function (data) {
+            bar.tick(data.length);
+        });
+
+        res.on('end', function () {
+            console.log('\n');
+        });
+    });
 
     return get.on('close', function () {
         exec(self.buildScript, { cwd: tmp }, function (err) {
