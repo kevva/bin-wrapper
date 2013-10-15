@@ -58,24 +58,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
         return self._test(cmd, cb);
     }
 
-    download(this.url, this.dest, { mode: '0755', proxy: this.proxy })
-        .on('response', function (res) {
-            var len = parseInt(res.headers['content-length'], 10);
-            var bar = new ProgressBar('  ' + path.basename(self.url) + ': downloading [:bar] :percent :etas', {
-                complete: '=',
-                incomplete: ' ',
-                width: 20,
-                total: len
-            });
-
-            res.on('data', function (data) {
-                bar.tick(data.length);
-            });
-
-            res.on('end', function () {
-                console.log('\n');
-            });
-        })
+    this._download(this.url, this.dest, { mode: '0755', proxy: this.proxy })
         .on('close', function () {
             return self._test(cmd, cb);
         });
@@ -92,7 +75,7 @@ BinWrapper.prototype.build = function (cb) {
     var self = this;
     var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
     var tmp = path.join(tmpDir, this.name);
-    var get = download(this.src, tmp, { extract: true, strip: '1', proxy: this.proxy });
+    var get = this._download(this.src, tmp, { extract: true, strip: '1', proxy: this.proxy });
 
     if (!cb || !mout.lang.isFunction(cb)) {
         cb = function () {};
@@ -102,9 +85,32 @@ BinWrapper.prototype.build = function (cb) {
         throw new Error('failed to find make');
     }
 
+    get.on('close', function () {
+        exec(self.buildScript, { cwd: tmp }, function (err) {
+            if (err) {
+                return cb(err);
+            }
+
+            return cb();
+        });
+    });
+};
+
+/**
+ * Download a string or an array of files
+ *
+ * @param {String|Array} src
+ * @param {String} dest
+ * @param {Object} opts
+ * @api private
+ */
+
+BinWrapper.prototype._download = function (src, dest, opts) {
+    var get = download(src, dest, opts);
+
     get.on('response', function (res) {
         var len = parseInt(res.headers['content-length'], 10);
-        var bar = new ProgressBar('  ' + path.basename(self.src) + ': downloading [:bar] :percent :etas', {
+        var bar = new ProgressBar('  ' + path.basename(src) + ': downloading [:bar] :percent :etas', {
             complete: '=',
             incomplete: ' ',
             width: 20,
@@ -120,15 +126,7 @@ BinWrapper.prototype.build = function (cb) {
         });
     });
 
-    get.on('close', function () {
-        exec(self.buildScript, { cwd: tmp }, function (err) {
-            if (err) {
-                return cb(err);
-            }
-
-            return cb();
-        });
-    });
+    return get;
 };
 
 /**
