@@ -143,7 +143,7 @@ BinWrapper.prototype._path = function () {
     }
 
     if (isbin(this.bin)) {
-        if (!which.sync(self.bin).indexOf('node_modules/.bin')) {
+        if (which.sync(self.bin).indexOf('node_modules/.bin') === -1) {
             return which.sync(self.bin);
         }
     }
