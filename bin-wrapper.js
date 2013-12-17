@@ -186,7 +186,7 @@ BinWrapper.prototype._parse = function (opts) {
     opts.arch = opts.arch || {};
 
     var platform = process.platform;
-    var arch = process.arch === 'x64' ? 'x64' : 'x86';
+    var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
     var required = [
         'bin',
         'name',
