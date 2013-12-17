@@ -59,7 +59,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
     }
 
     this._download(this.url, this.dest, { mode: '0755', proxy: this.proxy })
-        .on('close', function () {
+        .once('close', function () {
             return self._test(cmd, cb);
         });
 };
@@ -85,7 +85,7 @@ BinWrapper.prototype.build = function (cb) {
         throw new Error('failed to find make');
     }
 
-    get.on('close', function () {
+    get.once('close', function () {
         exec(self.buildScript, { cwd: tmp }, function (err) {
             if (err) {
                 return cb(err);
