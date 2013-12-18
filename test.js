@@ -52,8 +52,17 @@ describe('BinWrapper.check()', function () {
             cb(assert.equal(w, true));
         });
     });
+});
+
+describe('BinWrapper.build()', function () {
     it('should download source and build binary', function (cb) {
-        bin.check(function () {
+        bin.path = path.join(__dirname, 'tmp/gifsicle-build');
+        bin.buildScript = './configure --disable-gifview --disable-gifdiff ' +
+                          '--prefix="' + path.join(__dirname, 'tmp/gifsicle-build') + '" ' +
+                          '--bindir="' + path.join(__dirname, 'tmp/gifsicle-build') + '" && ' +
+                          'make install';
+
+        bin.build(function () {
             fs.stat(bin.path, cb);
         });
     });

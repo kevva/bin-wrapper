@@ -18,7 +18,7 @@
   "license": "MIT",
   "repository": "git://github.com/kevva/bin-wrapper.git",
   "scripts": {
-    "test": "mocha --reporter list"
+    "test": "mocha --reporter list --timeout 0"
   },
   "main": "bin-wrapper.js",
   "files": [
