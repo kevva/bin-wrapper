@@ -3,8 +3,10 @@
 var download = require('download');
 var exec = require('child_process').exec;
 var fs = require('fs');
+var hasOwn = require('mout/object/hasOwn');
 var isbin = require('isbin');
-var mout = require('mout');
+var isFunction = require('mout/lang/isFunction');
+var mixIn = require('mout/object/mixIn');
 var os = require('os');
 var path = require('path');
 var ProgressBar = require('progress');
@@ -46,7 +48,7 @@ function BinWrapper(opts) {
 BinWrapper.prototype.check = function (cmd, cb) {
     var self = this;
 
-    if (!cb && mout.lang.isFunction(cmd)) {
+    if (!cb && isFunction(cmd)) {
         cb = cmd;
         cmd = ['--help'];
     }
@@ -77,7 +79,7 @@ BinWrapper.prototype.build = function (cb) {
     var tmp = path.join(tmpDir, this.name);
     var get = this._download(this.src, tmp, { extract: true, strip: '1', proxy: this.proxy });
 
-    if (!cb || !mout.lang.isFunction(cb)) {
+    if (!cb || !isFunction(cb)) {
         cb = function () {};
     }
 
@@ -194,16 +196,16 @@ BinWrapper.prototype._parse = function (opts) {
         'url'
     ];
 
-    if (mout.object.hasOwn(opts.platform, [platform])) {
-        opts = mout.object.mixIn(opts, opts.platform[platform]);
+    if (hasOwn(opts.platform, [platform])) {
+        opts = mixIn(opts, opts.platform[platform]);
     }
 
-    if (mout.object.hasOwn(opts.arch, [arch])) {
-        opts = mout.object.mixIn(opts, opts.arch[arch]);
+    if (hasOwn(opts.arch, [arch])) {
+        opts = mixIn(opts, opts.arch[arch]);
     }
 
     required.forEach(function (val) {
-        if (!mout.object.hasOwn(opts, val)) {
+        if (!hasOwn(opts, val)) {
             throw new Error(val + ' option is required');
         }
     });
