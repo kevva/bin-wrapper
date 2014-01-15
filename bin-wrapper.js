@@ -61,7 +61,7 @@ BinWrapper.prototype.check = function (cmd, cb) {
     }
 
     this._download(this.url, this.dest, { mode: '0755', proxy: this.proxy })
-        .once('close', function () {
+        .on('close', function () {
             return self._test(cmd, cb);
         });
 };
@@ -83,7 +83,7 @@ BinWrapper.prototype.build = function (cb) {
         cb = function () {};
     }
 
-    get.once('close', function () {
+    get.on('close', function () {
         exec(self.buildScript, { cwd: tmp }, function (err) {
             if (err) {
                 return cb(err);
