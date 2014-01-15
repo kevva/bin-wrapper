@@ -83,10 +83,6 @@ BinWrapper.prototype.build = function (cb) {
         cb = function () {};
     }
 
-    if (!isbin('make')) {
-        throw new Error('failed to find make');
-    }
-
     get.once('close', function () {
         exec(self.buildScript, { cwd: tmp }, function (err) {
             if (err) {
