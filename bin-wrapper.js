@@ -77,7 +77,7 @@ BinWrapper.prototype.build = function (cb) {
     var self = this;
     var tmpDir = os.tmpdir ? os.tmpdir() : os.tmpDir();
     var tmp = path.join(tmpDir, this.name);
-    var get = this._download(this.src, tmp, { extract: true, strip: '1', proxy: this.proxy });
+    var get = this._download(this.src, tmp, { mode: '0777', extract: true, strip: '1', proxy: this.proxy });
 
     if (!cb || !isFunction(cb)) {
         cb = function () {};
