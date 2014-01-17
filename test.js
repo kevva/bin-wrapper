@@ -1,10 +1,11 @@
-/*global describe, it */
+/*global afterEach, describe, it */
 'use strict';
 
 var assert = require('assert');
 var Bin = require('./bin-wrapper');
 var fs = require('fs');
 var path = require('path');
+var rm = require('rimraf');
 
 var opts = {
     name: 'gifsicle',
@@ -46,6 +47,10 @@ var opts = {
 };
 var bin = new Bin(opts);
 
+afterEach(function () {
+    rm.sync(path.join(__dirname, 'tmp'));
+});
+
 describe('BinWrapper.check()', function () {
     it('should download and verify a binary', function (cb) {
         bin.check(function (w) {
@@ -56,14 +61,14 @@ describe('BinWrapper.check()', function () {
 
 describe('BinWrapper.build()', function () {
     it('should download source and build binary', function (cb) {
-        bin.path = path.join(__dirname, 'tmp/gifsicle-build');
+        bin.path = path.join(__dirname, 'tmp/gifsicle');
         bin.buildScript = './configure --disable-gifview --disable-gifdiff ' +
-                          '--prefix="' + path.join(__dirname, 'tmp/gifsicle-build') + '" ' +
-                          '--bindir="' + path.join(__dirname, 'tmp/gifsicle-build') + '" && ' +
+                          '--prefix="' + path.join(__dirname, 'tmp/gifsicle') + '" ' +
+                          '--bindir="' + path.join(__dirname, 'tmp/gifsicle') + '" && ' +
                           'make install';
 
         bin.build(function () {
-            fs.stat(bin.path, cb);
+            cb(assert.ok(fs.existsSync(bin.path)));
         });
     });
 });
