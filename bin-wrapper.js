@@ -10,6 +10,7 @@ var mixIn = require('mout/object/mixIn');
 var os = require('os');
 var path = require('path');
 var ProgressBar = require('progress');
+var rm = require('rimraf');
 var spawn = require('child_process').spawn;
 var which = require('which');
 
@@ -88,6 +89,8 @@ BinWrapper.prototype.build = function (cb) {
             if (err) {
                 return cb(err);
             }
+
+            rm.sync(tmp);
 
             return cb();
         });

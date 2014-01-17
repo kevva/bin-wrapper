@@ -29,6 +29,7 @@
     "isbin": "0.0.2",
     "mout": "~0.6.0",
     "progress": "~1.1.0",
+    "rimraf": "~2.2.6",
     "which": "~1.0.5"
   },
   "devDependencies": {
