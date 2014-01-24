@@ -20,9 +20,9 @@
   "scripts": {
     "test": "mocha --reporter list --timeout 0"
   },
-  "main": "bin-wrapper.js",
+  "main": "index.js",
   "files": [
-    "bin-wrapper.js"
+    "index.js"
   ],
   "dependencies": {
     "download": "~0.1.2",

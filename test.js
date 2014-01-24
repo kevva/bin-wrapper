@@ -2,7 +2,7 @@
 'use strict';
 
 var assert = require('assert');
-var Bin = require('./bin-wrapper');
+var Bin = require('.');
 var fs = require('fs');
 var path = require('path');
 var rm = require('rimraf');
