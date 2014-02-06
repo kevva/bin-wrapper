@@ -1,74 +1,81 @@
-/*global afterEach, describe, it */
+/* global afterEach, beforeEach, describe, it */
 'use strict';
 
 var assert = require('assert');
 var Bin = require('./');
-var fs = require('fs');
 var path = require('path');
 var rm = require('rimraf');
 
-var opts = {
-    name: 'gifsicle',
-    bin: 'gifsicle',
-    path: path.join(__dirname, 'tmp'),
-    src: 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz',
-    buildScript: './configure --disable-gifview --disable-gifdiff --bindir="' + path.join(__dirname, '../tmp') +
-                 '" && make install',
-    platform: {
-        darwin: {
-            url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/osx/gifsicle'
-        },
-        linux: {
-            url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/linux/x86/gifsicle',
-            arch: {
-                x64: {
-                    url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/linux/x64/gifsicle',
-                }
-            }
-        },
-        freebsd: {
-            url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/freebsd/x86/gifsicle',
-            arch: {
-                x64: {
-                    url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/freebsd/x64/gifsicle',
-                }
-            }
-        },
-        win32: {
-            bin: 'gifsicle.exe',
-            url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/win/x86/gifsicle.exe',
-            arch: {
-                x64: {
-                    url: 'https://raw.github.com/yeoman/node-gifsicle/master/vendor/win/x64/gifsicle.exe',
-                }
-            }
-        }
-    }
-};
-var bin = new Bin(opts);
-
-afterEach(function () {
-    rm.sync(path.join(__dirname, 'tmp'));
-});
-
-describe('BinWrapper.check()', function () {
-    it('should download and verify a binary', function (cb) {
-        bin.check(function (w) {
-            cb(assert.equal(w, true));
-        });
+describe('BinWrapper()', function () {
+    afterEach(function (cb) {
+        rm(path.join(__dirname, 'tmp'), cb);
     });
-});
 
-describe('BinWrapper.build()', function () {
-    it('should download source and build binary', function (cb) {
-        bin.path = path.join(__dirname, 'tmp/gifsicle');
-        bin.buildScript = './configure --disable-gifview --disable-gifdiff ' +
-                          '--prefix="' + path.join(__dirname, 'tmp/gifsicle') + '" ' +
-                          '--bindir="' + path.join(__dirname, 'tmp/gifsicle') + '" && ' +
-                          'make install';
+    beforeEach(function () {
+        this.bin = new Bin({ dest: 'tmp' });
+    });
 
-        bin.build(function () {
-            cb(assert.ok(fs.existsSync(bin.path)));
-        });
+    it('should add a path', function (cb) {
+        var dest = path.join(__dirname, 'vendor');
+        var src = [this.bin.dest, dest];
+        this.bin.addPath(dest);
+        cb(assert.equal(this.bin.paths.toString(), src));
+    });
+
+    it('should add a URL', function (cb) {
+        var dest = 'http://this.is/a/nice/url';
+        this.bin.addUrl(dest);
+        cb(assert.equal(this.bin.url, dest));
+    });
+
+    it('should add a source', function (cb) {
+        var dest = 'http://this.is/a/nice/url';
+        this.bin.addSource(dest);
+        cb(assert.equal(this.bin.src, dest));
+    });
+
+    it('should download and test a binary and emit working', function (cb) {
+        var url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle';
+
+        if (process.platform === 'darwin') {
+            url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle';
+        }
+
+        this.bin
+            .addUrl(url)
+            .check('gifsicle')
+            .on('working', function () {
+                cb(assert(true));
+            });
+    });
+
+    it('should download and test a binary and emit fail', function (cb) {
+        var url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle';
+
+        if (process.platform === 'darwin') {
+            url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle';
+        }
+
+        this.bin
+            .addUrl(url)
+            .check('gifsicle')
+            .on('fail', function () {
+                cb(assert(true));
+            });
+    });
+
+    it('should download and and build source code', function (cb) {
+        var url = 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz';
+        var script = './configure --disable-gifview --disable-gifdiff ' +
+                     '--prefix="' + path.join(__dirname, this.bin.dest) + '" ' +
+                     '--bindir="' + path.join(__dirname, this.bin.dest) + '" && ' +
+                     'make install';
+
+        this.bin
+            .addSource(url)
+            .build(script)
+            .on('build', function () {
+                cb(assert(true));
+            });
     });
 });

@@ -26,14 +26,15 @@
   ],
   "dependencies": {
     "download": "~0.1.2",
-    "isbin": "0.0.2",
+    "executable": "~0.1.0",
+    "find-file": "~0.1.0",
     "mout": "~0.6.0",
     "progress": "~1.1.0",
     "rimraf": "~2.2.6",
-    "which": "~1.0.5"
+    "tempfile": "~0.1.2"
   },
   "devDependencies": {
-    "mocha": "~1.12.0"
+    "mocha": "~1.17.0"
   },
   "engines": {
     "node": ">=0.10.0"
