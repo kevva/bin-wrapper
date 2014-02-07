@@ -49,9 +49,6 @@ util.inherits(BinWrapper, events.EventEmitter);
 BinWrapper.prototype.check = function (cmd) {
     var self = this;
     var global = this._find(this.bin);
-    var dl = this._download({ url: this.url, name: this.bin }, this.dest, {
-        mode: '0755'
-    });
 
     cmd = cmd || ['--help'];
     cmd = Array.isArray(cmd) ? cmd : [cmd];
@@ -60,7 +57,9 @@ BinWrapper.prototype.check = function (cmd) {
         return this._test(global, cmd);
     }
 
-    dl.on('close', function () {
+    this._download({ url: this.url, name: this.bin }, this.dest, {
+        mode: '0755'
+    }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
     });
 
