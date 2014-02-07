@@ -1,5 +1,6 @@
 'use strict';
 
+var binCheck = require('bin-check');
 var download = require('download');
 var events = require('events');
 var exec = require('child_process').exec;
@@ -8,12 +9,16 @@ var findFile = require('find-file');
 var path = require('path');
 var ProgressBar = require('progress');
 var rm = require('rimraf');
-var spawn = require('child_process').spawn;
 var tempfile = require('tempfile');
 var util = require('util');
 
 /**
  * Initialize BinWrapper with options
+ *
+ * Options:
+ *
+ *   - `bin` The name of the binary
+ *   - `dest` Where to download the binary
  *
  * @param {Object} opts
  * @api public
@@ -22,8 +27,10 @@ var util = require('util');
 function BinWrapper(opts) {
     events.EventEmitter.call(this);
     opts = opts || {};
+    this.bin = opts.bin;
     this.dest = opts.dest || process.cwd();
     this.paths = [this.dest];
+    this.path = this._find(this.bin) || path.join(this.dest, this.bin);
 }
 
 /**
@@ -35,15 +42,14 @@ util.inherits(BinWrapper, events.EventEmitter);
 /**
  * Check if a binary is present and working
  *
- * @param {String} bin
  * @param {String|Array} cmd
  * @api public
  */
 
-BinWrapper.prototype.check = function (bin, cmd) {
+BinWrapper.prototype.check = function (cmd) {
     var self = this;
-    var global = this._find(bin);
-    var dl = this._download(this.url, this.dest, {
+    var global = this._find(this.bin);
+    var dl = this._download({ url: this.url, name: this.bin }, this.dest, {
         mode: '0755'
     });
 
@@ -51,11 +57,11 @@ BinWrapper.prototype.check = function (bin, cmd) {
     cmd = Array.isArray(cmd) ? cmd : [cmd];
 
     if (global) {
-        return self._test(global, cmd);
+        return this._test(global, cmd);
     }
 
     dl.on('close', function () {
-        return self._test(path.join(self.dest, bin), cmd);
+        return self._test(path.join(self.dest, self.bin), cmd);
     });
 
     return this;
@@ -93,15 +99,13 @@ BinWrapper.prototype.build = function (cmd) {
 };
 
 /**
- * Add a path or an array of paths to check
+ * Add a path to check
  *
  * @param {String} src
- * @param {String} platform
- * @param {String} arch
  * @api public
  */
 
-BinWrapper.prototype.addPath = function (src, platform, arch) {
+BinWrapper.prototype.addPath = function (src) {
     this.paths.push(src);
     return this;
 };
@@ -160,15 +164,14 @@ BinWrapper.prototype._find = function (bin) {
  */
 
 BinWrapper.prototype._test = function (bin, cmd) {
-    var cp = spawn(bin, cmd);
     var self = this;
 
-    cp.on('error', function (err) {
-        self.emit('error', err);
-    });
+    binCheck(bin, cmd, function (err, works) {
+        if (err) {
+            self.emit('error', err);
+        }
 
-    cp.on('exit', function (code) {
-        self.emit(code === 0 ? 'working' : 'fail');
+        self.emit(works ? 'working' : 'fail');
     });
 
     return this;
@@ -185,6 +188,10 @@ BinWrapper.prototype._test = function (bin, cmd) {
 
 BinWrapper.prototype._download = function (url, dest, opts) {
     var dl = download(url, dest, opts);
+
+    if (url.url) {
+        url = url.url;
+    }
 
     dl.on('response', function (res) {
         var len = parseInt(res.headers['content-length'], 10);

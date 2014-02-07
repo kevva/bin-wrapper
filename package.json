@@ -1,7 +1,7 @@
 {
   "name": "bin-wrapper",
   "version": "0.1.9",
-  "description": "Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies",
+  "description": "Binary wrapper that makes your programs seamlessly available as local dependencies",
   "keywords": [
     "bin",
     "build",
@@ -25,6 +25,7 @@
     "index.js"
   ],
   "dependencies": {
+    "bin-check": "~0.1.0",
     "download": "~0.1.2",
     "executable": "~0.1.0",
     "find-file": "~0.1.0",

@@ -12,7 +12,7 @@ describe('BinWrapper()', function () {
     });
 
     beforeEach(function () {
-        this.bin = new Bin({ dest: 'tmp' });
+        this.bin = new Bin({ bin: 'gifsicle', dest: 'tmp' });
     });
 
     it('should add a path', function (cb) {
@@ -34,6 +34,11 @@ describe('BinWrapper()', function () {
         cb(assert.equal(this.bin.src, dest));
     });
 
+    it('should return destination path', function (cb) {
+        var dest = path.join(this.bin.dest, this.bin.bin);
+        cb(assert.equal(this.bin.path, dest));
+    });
+
     it('should download and test a binary and emit working', function (cb) {
         var url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle';
 
@@ -43,7 +48,7 @@ describe('BinWrapper()', function () {
 
         this.bin
             .addUrl(url)
-            .check('gifsicle')
+            .check()
             .on('working', function () {
                 cb(assert(true));
             });
@@ -58,7 +63,7 @@ describe('BinWrapper()', function () {
 
         this.bin
             .addUrl(url)
-            .check('gifsicle')
+            .check()
             .on('fail', function () {
                 cb(assert(true));
             });

@@ -8,39 +8,29 @@ Install with [npm](https://npmjs.org/package/bin-wrapper): `npm install bin-wrap
 
 ## Examples
 
-All `platform` and `arch` specific options takes precedence over the base 
-options. See [test.js](test.js) for a full fleshed example.
-
 ```js
-var Bin = require('bin-wrapper');
+var BinWrapper = require('bin-wrapper');
+var bin = new BinWrapper({ bin: 'gifsicle', dest: 'vendor' });
 
-var opts = {
-    name: 'Gifsicle',
-    bin: 'gifsicle',
-    path: 'vendor',
-    url: 'http://url/to/gifsicle',
-    src: 'http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz',
-    buildScript: './configure --bindir="vendor" && make install',
-    platform: {
-        win32: {
-            bin: 'gifsicle.exe',
-            url: [
-                'http://url/to/gifsicle.exe'
-                'http://url/to/gifsicle.dll'
-            ]
-        }
-    }
-}
-var bin = new Bin(opts);
-
-bin.check('--version', function (works) {
-    if (!works) {
-        console.log('Pre-build test failed, compiling from source');
-        return bin.build();
-    }
-
-    console.log('Binary passed the test');
-});
+bin
+    .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle')
+    .addSource('http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz')
+    .check()
+    .on('working', function () {
+        console.log('gifsicle is working');
+    })
+    .on('fail', function () {
+        this.build('./configure && make && make install')
+            .on('build', function () {
+                console.log('gifsicle rebuilt successfully!')
+            })
+            .on('error', function (err) {
+                console.log(err);
+            });
+    })
+    .on('error', function (err) {
+        console.log(err);
+    });
 ```
 
 Get the path to your binary with `bin.path`.
@@ -52,15 +42,33 @@ console.log(bin.path);
 
 ## API
 
-### .check(cmd, cb)
+### new BinWrapper(opts)
+
+Creates a new `BinWrapper`. Available options are `bin` which is the name of the 
+binary and `dest` which is where to download the binary to.
+
+### .check(cmd)
 
 Check if a binary is present and working. If it isn't, download and test it by 
 running the binary with `cmd` and see if it exits correctly.
 
-### .build(cb)
+### .build(cmd)
 
 Download the source archive defined in the `src` property and build it using the 
-build script defined in the `buildScript` property.
+build script defined in the `cmd` argument.
+
+### .addPath(src)
+
+Add a path where to check for the binary. By default `dest` is added to paths.
+
+### .addUrl(url, platform ,arch)
+
+Add a URL to download the binary from. Use `platform` and `arch` to target a 
+specific system.
+
+### .addSource(url)
+
+Add a URL where to download the source code from.
 
 ## License
 
