@@ -29,7 +29,7 @@ function BinWrapper(opts) {
     opts = opts || {};
     this.bin = opts.bin;
 
-    if (process.platform === 'win32' && path.extname(this.bin) !== '.exe') {
+    if (process.platform === 'win32' && path.extname === '' && path.extname(this.bin) !== '.exe') {
         this.bin = this.bin + '.exe';
     }
 
