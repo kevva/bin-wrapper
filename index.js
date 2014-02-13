@@ -28,6 +28,11 @@ function BinWrapper(opts) {
     events.EventEmitter.call(this);
     opts = opts || {};
     this.bin = opts.bin;
+
+    if (process.platform === 'win32' && path.extname(this.bin) !== '.exe') {
+        this.bin = this.bin + '.exe';
+    }
+
     this.dest = opts.dest || process.cwd();
     this.paths = [this.dest];
     this.path = this._find(this.bin) || path.join(this.dest, this.bin);
