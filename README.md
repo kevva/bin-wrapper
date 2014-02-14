@@ -23,7 +23,7 @@ bin
     .on('fail', function () {
         this.build('./configure && make && make install')
     })
-    .on('ok', function () {
+    .on('success', function () {
         console.log('gifsicle is working');
     })
     .on('finish', function () {
@@ -49,7 +49,7 @@ binary and `dest` which is where to download/build the binary to.
 Check if a binary is present and working. If it isn't, download and test it by 
 running the binary with `cmd` and see if it exits correctly.
 
-Emits `ok` if the binary is working and `fail` if the binary failed to exit with 
+Emits `success` if the binary is working and `fail` if the binary failed to exit with 
 status code `0`.
 
 ### .build(cmd)

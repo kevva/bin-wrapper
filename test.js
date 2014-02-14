@@ -38,7 +38,7 @@ describe('BinWrapper()', function () {
             .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'linux', 'x64')
             .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
             .check()
-            .on('working', function () {
+            .on('success', function () {
                 cb(assert(true));
             });
     });
@@ -63,7 +63,7 @@ describe('BinWrapper()', function () {
         this.bin
             .addSource(url)
             .build(script)
-            .on('build', function () {
+            .on('finish', function () {
                 cb(assert(true));
             });
     });

@@ -193,7 +193,7 @@ BinWrapper.prototype._test = function (bin, cmd) {
             self.emit('error', err);
         }
 
-        self.emit(works ? 'ok' : 'fail');
+        self.emit(works ? 'success' : 'fail');
     });
 
     return this;
