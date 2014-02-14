@@ -55,9 +55,9 @@ util.inherits(BinWrapper, events.EventEmitter);
  */
 
 BinWrapper.prototype.check = function (cmd) {
-    var self = this;
     var global = this._find(this.bin);
-    this.url = this._parse(this.urls);
+    var self = this;
+    var url = this._parse(this.urls).url;
 
     cmd = cmd || ['--help'];
     cmd = Array.isArray(cmd) ? cmd : [cmd];
@@ -66,7 +66,7 @@ BinWrapper.prototype.check = function (cmd) {
         return this._test(global, cmd);
     }
 
-    this._download({ url: this.url, name: this.bin }, this.dest, {
+    this._download({ url: url, name: this.bin }, this.dest, {
         mode: '0755'
     }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
@@ -247,11 +247,11 @@ BinWrapper.prototype._parse = function (opts) {
     var platform = process.platform;
     var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
 
-    if (opts.platform.hasOwnProperty([platform])) {
+    if (opts.platform && opts.platform.hasOwnProperty([platform])) {
         opts = merge(opts, opts.platform[platform]);
     }
 
-    if (opts.arch.hasOwnProperty([arch])) {
+    if (opts.arch && opts.arch.hasOwnProperty([arch])) {
         opts = merge(opts, opts.arch[arch]);
     }
 

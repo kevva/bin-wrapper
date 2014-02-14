@@ -22,12 +22,6 @@ describe('BinWrapper()', function () {
         cb(assert.equal(this.bin.paths.toString(), src));
     });
 
-    it('should add a URL', function (cb) {
-        var dest = 'http://this.is/a/nice/url';
-        this.bin.addUrl(dest);
-        cb(assert.equal(this.bin.url, dest));
-    });
-
     it('should add a source', function (cb) {
         var dest = 'http://this.is/a/nice/url';
         this.bin.addSource(dest);
@@ -40,14 +34,9 @@ describe('BinWrapper()', function () {
     });
 
     it('should download and test a binary and emit working', function (cb) {
-        var url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle';
-
-        if (process.platform === 'darwin') {
-            url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle';
-        }
-
         this.bin
-            .addUrl(url)
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'linux', 'x64')
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
             .check()
             .on('working', function () {
                 cb(assert(true));
@@ -55,14 +44,9 @@ describe('BinWrapper()', function () {
     });
 
     it('should download and test a binary and emit fail', function (cb) {
-        var url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle';
-
-        if (process.platform === 'darwin') {
-            url = 'https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle';
-        }
-
         this.bin
-            .addUrl(url)
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'darwin')
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'linux', 'x64')
             .check()
             .on('fail', function () {
                 cb(assert(true));
