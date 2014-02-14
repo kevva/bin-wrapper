@@ -98,7 +98,7 @@ BinWrapper.prototype.build = function (cmd) {
             }
 
             rm(tmp, function () {
-                self.emit('build');
+                self.emit('finish');
             });
         });
     });
@@ -193,7 +193,7 @@ BinWrapper.prototype._test = function (bin, cmd) {
             self.emit('error', err);
         }
 
-        self.emit(works ? 'working' : 'fail');
+        self.emit(works ? 'ok' : 'fail');
     });
 
     return this;

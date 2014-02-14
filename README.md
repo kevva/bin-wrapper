@@ -13,31 +13,28 @@ var BinWrapper = require('bin-wrapper');
 var bin = new BinWrapper({ bin: 'gifsicle', dest: 'vendor' });
 
 bin
-    .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle')
+    .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
+    .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'linux', 'x64')
     .addSource('http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz')
     .check()
-    .on('working', function () {
-        console.log('gifsicle is working');
-    })
-    .on('fail', function () {
-        this.build('./configure && make && make install')
-            .on('build', function () {
-                console.log('gifsicle rebuilt successfully!')
-            })
-            .on('error', function (err) {
-                console.log(err);
-            });
-    })
     .on('error', function (err) {
         console.log(err);
     });
+    .on('fail', function () {
+        this.build('./configure && make && make install')
+    })
+    .on('ok', function () {
+        console.log('gifsicle is working');
+    })
+    .on('finish', function () {
+        console.log('gifsicle rebuilt successfully!')
+    })
 ```
 
 Get the path to your binary with `bin.path`.
 
 ```js
-console.log(bin.path);
-// => path/to/vendor/gifsicle
+console.log(bin.path); // => path/to/vendor/gifsicle
 ```
 
 ## API
@@ -45,17 +42,22 @@ console.log(bin.path);
 ### new BinWrapper(opts)
 
 Creates a new `BinWrapper`. Available options are `bin` which is the name of the 
-binary and `dest` which is where to download the binary to.
+binary and `dest` which is where to download/build the binary to.
 
 ### .check(cmd)
 
 Check if a binary is present and working. If it isn't, download and test it by 
 running the binary with `cmd` and see if it exits correctly.
 
+Emits `ok` if the binary is working and `fail` if the binary failed to exit with 
+status code `0`.
+
 ### .build(cmd)
 
 Download the source archive defined in the `src` property and build it using the 
 build script defined in the `cmd` argument.
+
+Emits `finish` when build is finished successfully.
 
 ### .addPath(src)
 
@@ -69,6 +71,22 @@ specific system.
 ### .addSource(url)
 
 Add a URL where to download the source code from.
+
+## Options
+
+### bin
+
+Type: `String`  
+Default: `undefined`
+
+Set the name of the binary.
+
+### dest
+
+Type: `String`  
+Default: `process.cwd()`
+
+Destination to download/build binary.
 
 ## License
 
