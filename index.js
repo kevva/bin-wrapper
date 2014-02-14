@@ -6,9 +6,11 @@ var events = require('events');
 var exec = require('child_process').exec;
 var executable = require('executable');
 var findFile = require('find-file');
+var merge = require('mout/object/merge');
 var path = require('path');
 var ProgressBar = require('progress');
 var rm = require('rimraf');
+var set = require('mout/object/set');
 var tempfile = require('tempfile');
 var util = require('util');
 
@@ -29,10 +31,11 @@ function BinWrapper(opts) {
     opts = opts || {};
     this.bin = opts.bin;
 
-    if (process.platform === 'win32' && path.extname === '' && path.extname(this.bin) !== '.exe') {
+    if (process.platform === 'win32' && path.extname === '') {
         this.bin = this.bin + '.exe';
     }
 
+    this.urls = {};
     this.dest = opts.dest || process.cwd();
     this.paths = [this.dest];
     this.path = this._find(this.bin) || path.join(this.dest, this.bin);
@@ -54,6 +57,7 @@ util.inherits(BinWrapper, events.EventEmitter);
 BinWrapper.prototype.check = function (cmd) {
     var self = this;
     var global = this._find(this.bin);
+    this.url = this._parse(this.urls);
 
     cmd = cmd || ['--help'];
     cmd = Array.isArray(cmd) ? cmd : [cmd];
@@ -124,7 +128,21 @@ BinWrapper.prototype.addPath = function (src) {
  */
 
 BinWrapper.prototype.addUrl = function (url, platform, arch) {
-    this.url = url;
+    var tmp = {};
+
+    if (platform && arch) {
+        set(tmp, 'platform.' + [platform] + '.arch.' + [arch] + '.url', url);
+        this.urls = merge(this.urls, tmp);
+        return this;
+    }
+
+    if (platform) {
+        set(tmp, 'platform.' + [platform] + '.url', url);
+        this.urls = merge(this.urls, tmp);
+        return this;
+    }
+
+    this.urls.url = url;
     return this;
 };
 
@@ -216,6 +234,31 @@ BinWrapper.prototype._download = function (url, dest, opts) {
     });
 
     return dl;
+};
+
+/**
+ * Parse object
+ *
+ * @param {Object} opts
+ * @api private
+ */
+
+BinWrapper.prototype._parse = function (opts) {
+    var platform = process.platform;
+    var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
+
+    if (opts.platform.hasOwnProperty([platform])) {
+        opts = merge(opts, opts.platform[platform]);
+    }
+
+    if (opts.arch.hasOwnProperty([arch])) {
+        opts = merge(opts, opts.arch[arch]);
+    }
+
+    delete opts.platform;
+    delete opts.arch;
+
+    return opts;
 };
 
 /**
