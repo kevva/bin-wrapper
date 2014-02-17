@@ -63,7 +63,7 @@ Emits `finish` when build is finished successfully.
 
 Add a path where to check for the binary. By default `dest` is added to paths.
 
-### .addUrl(url, platform ,arch)
+### .addUrl(url, platform, arch)
 
 Add a URL to download the binary from. Use `platform` and `arch` to target a 
 specific system.
