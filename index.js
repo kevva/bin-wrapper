@@ -1,7 +1,6 @@
 'use strict';
 
 var binCheck = require('bin-check');
-var download = require('download');
 var events = require('events');
 var exec = require('child_process').exec;
 var executable = require('executable');
@@ -209,6 +208,7 @@ BinWrapper.prototype._test = function (bin, cmd) {
  */
 
 BinWrapper.prototype._download = function (url, dest, opts) {
+    var download = require('download');
     var dl = download(url, dest, opts);
 
     if (url.url) {
