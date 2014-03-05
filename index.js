@@ -7,7 +7,6 @@ var executable = require('executable');
 var findFile = require('find-file');
 var merge = require('mout/object/merge');
 var path = require('path');
-var ProgressBar = require('progress');
 var rm = require('rimraf');
 var set = require('mout/object/set');
 var tempfile = require('tempfile');
@@ -34,7 +33,8 @@ function BinWrapper(opts) {
         this.bin = this.bin + '.exe';
     }
 
-    this.urls = {};
+    this.files = {};
+    this.urls = { name: this.bin };
     this.dest = opts.dest || process.cwd();
     this.paths = [this.dest];
     this.path = this._find(this.bin) || path.join(this.dest, this.bin);
@@ -54,9 +54,11 @@ util.inherits(BinWrapper, events.EventEmitter);
  */
 
 BinWrapper.prototype.check = function (cmd) {
+    var download = require('download');
+    var file = this._parse(this.files);
     var global = this._find(this.bin);
     var self = this;
-    var url = this._parse(this.urls).url;
+    var url = this._parse(this.urls);
 
     cmd = cmd || ['--help'];
     cmd = Array.isArray(cmd) ? cmd : [cmd];
@@ -65,7 +67,9 @@ BinWrapper.prototype.check = function (cmd) {
         return this._test(global, cmd);
     }
 
-    this._download({ url: url, name: this.bin }, this.dest, {
+    var dl = Object.getOwnPropertyNames(file).length !== 0 ? [].concat(url, file) : url;
+
+    download(dl, this.dest, {
         mode: '0755'
     }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
@@ -146,6 +150,44 @@ BinWrapper.prototype.addUrl = function (url, platform, arch) {
 };
 
 /**
+ * Add a file URL to download
+ *
+ * @param {String|Object} url
+ * @param {String} platform
+ * @param {String} arch
+ * @api public
+ */
+
+BinWrapper.prototype.addFile = function (url, platform, arch) {
+    var name = path.basename(url);
+    var tmp = {};
+
+    if (url.url && url.name) {
+        name = url.name;
+        url = url.url;
+    }
+
+    if (platform && arch) {
+        set(tmp, 'platform.' + [platform] + '.arch.' + [arch] + '.name', name);
+        set(tmp, 'platform.' + [platform] + '.arch.' + [arch] + '.url', url);
+        this.files = merge(this.files, tmp);
+        return this;
+    }
+
+    if (platform) {
+        set(tmp, 'platform.' + [platform] + '.name', name);
+        set(tmp, 'platform.' + [platform] + '.url', url);
+        this.files = merge(this.files, tmp);
+        return this;
+    }
+
+    this.files.name = name;
+    this.files.url = url;
+    return this;
+};
+
+
+/**
  * Add a URL to source code
  *
  * @param {String} url
@@ -199,9 +241,9 @@ BinWrapper.prototype._test = function (bin, cmd) {
 };
 
 /**
- * Download with progress bars
+ * Download
  *
- * @param {String} url
+ * @param {String|Object} url
  * @param {String} dest
  * @param {Object} opts
  * @api private
@@ -210,28 +252,6 @@ BinWrapper.prototype._test = function (bin, cmd) {
 BinWrapper.prototype._download = function (url, dest, opts) {
     var download = require('download');
     var dl = download(url, dest, opts);
-
-    if (url.url) {
-        url = url.url;
-    }
-
-    dl.on('response', function (res) {
-        var len = parseInt(res.headers['content-length'], 10);
-        var bar = new ProgressBar('  ' + path.basename(url) + ': downloading [:bar] :percent :etas', {
-            complete: '=',
-            incomplete: ' ',
-            width: 20,
-            total: len
-        });
-
-        res.on('data', function (data) {
-            bar.tick(data.length);
-        });
-
-        res.on('end', function () {
-            console.log('\n');
-        });
-    });
 
     return dl;
 };

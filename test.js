@@ -3,6 +3,7 @@
 
 var assert = require('assert');
 var Bin = require('./');
+var fs = require('fs');
 var path = require('path');
 var rm = require('rimraf');
 
@@ -39,6 +40,20 @@ describe('BinWrapper()', function () {
             .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
             .check()
             .on('success', function () {
+                cb(assert(true));
+            });
+    });
+
+    it('should download two files and test a binary and emit working', function (cb) {
+        this.bin
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'linux', 'x64')
+            .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
+            .addFile('https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/win/x64/libjpeg-62.dll')
+            .check()
+            .on('success', function () {
+                assert(true);
+                assert(fs.existsSync('tmp/libjpeg-62.dll'), true);
+                assert(fs.existsSync('tmp/gifsicle'), true);
                 cb(assert(true));
             });
     });
