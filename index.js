@@ -207,7 +207,7 @@ BinWrapper.prototype.addSource = function (url) {
  */
 
 BinWrapper.prototype._find = function (bin) {
-    var file = findFile(bin, this.paths, 'node_modules/.bin');
+    var file = findFile(bin, { path: this.paths, exclude: 'node_modules/.bin' });
 
     if (file) {
         if (executable.sync(file[0])) {
