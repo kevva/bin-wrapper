@@ -255,6 +255,14 @@ BinWrapper.prototype._test = function (bin, cmd) {
  */
 
 BinWrapper.prototype._download = function (url, dest, opts) {
+    var proxy = process.env.http_proxy ||
+                process.env.HTTP_PROXY ||
+                process.env.https_proxy ||
+                process.env.HTTPS_PROXY ||
+                null;
+
+    opts.proxy = proxy;
+
     var download = require('download');
     var dl = download(url, dest, opts);
     var self = this;
