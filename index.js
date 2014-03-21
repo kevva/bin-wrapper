@@ -252,6 +252,11 @@ BinWrapper.prototype._test = function (bin, cmd) {
 BinWrapper.prototype._download = function (url, dest, opts) {
     var download = require('download');
     var dl = download(url, dest, opts);
+    var self = this;
+
+    dl.on('error', function (err) {
+        self.emit('error', err);
+    });
 
     return dl;
 };
