@@ -5,6 +5,7 @@ var events = require('events');
 var exec = require('child_process').exec;
 var executable = require('executable');
 var findFile = require('find-file');
+var fs = require('fs');
 var merge = require('mout/object/merge');
 var path = require('path');
 var rm = require('rimraf');
@@ -210,9 +211,15 @@ BinWrapper.prototype._find = function (bin) {
     var file = findFile(bin, this.paths, 'node_modules/.bin');
 
     if (file) {
+        if (fs.lstatSync(file[0]).isSymbolicLink()) {
+            return false;
+        }
+
         if (executable.sync(file[0])) {
             return file[0];
         }
+
+        return false;
     }
 
     return false;
