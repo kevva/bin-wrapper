@@ -1,6 +1,6 @@
 {
   "name": "bin-wrapper",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Binary wrapper that makes your programs seamlessly available as local dependencies",
   "keywords": [
     "bin",
