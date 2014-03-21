@@ -208,7 +208,7 @@ BinWrapper.prototype.addSource = function (url) {
  */
 
 BinWrapper.prototype._find = function (bin) {
-    var file = findFile(bin, this.paths, 'node_modules/.bin');
+    var file = findFile(bin, { path: this.paths, exclude: 'node_modules/.bin' });
 
     if (file) {
         if (fs.lstatSync(file[0]).isSymbolicLink()) {
@@ -218,8 +218,6 @@ BinWrapper.prototype._find = function (bin) {
         if (executable.sync(file[0])) {
             return file[0];
         }
-
-        return false;
     }
 
     return false;
