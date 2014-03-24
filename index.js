@@ -70,8 +70,15 @@ BinWrapper.prototype.check = function (cmd) {
 
     var dl = Object.getOwnPropertyNames(file).length !== 0 ? [].concat(url, file) : url;
 
+     var proxy = process.env.http_proxy ||
+        process.env.HTTP_PROXY ||
+        process.env.https_proxy ||
+        process.env.HTTPS_PROXY ||
+        null;
+
     download(dl, this.dest, {
-        mode: '0755'
+        mode: '0755',
+        proxy: proxy
     }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
     });
