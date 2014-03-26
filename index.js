@@ -54,7 +54,6 @@ util.inherits(BinWrapper, events.EventEmitter);
  */
 
 BinWrapper.prototype.check = function (cmd) {
-    var download = require('download');
     var file = this._parse(this.files);
     var global = this._find(this.bin);
     var self = this;
@@ -69,7 +68,7 @@ BinWrapper.prototype.check = function (cmd) {
 
     var dl = Object.getOwnPropertyNames(file).length !== 0 ? [].concat(url, file) : url;
 
-    download(dl, this.dest, {
+    this._download(dl, this.dest, {
         mode: '0755'
     }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
