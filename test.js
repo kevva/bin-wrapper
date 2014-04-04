@@ -13,7 +13,7 @@ describe('BinWrapper()', function () {
     });
 
     beforeEach(function () {
-        this.bin = new Bin({ bin: 'gifsicle', dest: 'tmp' });
+        this.bin = new Bin({ bin: 'gifsicle', version: '1.71', dest: 'tmp' });
     });
 
     it('should add a path', function (cb) {

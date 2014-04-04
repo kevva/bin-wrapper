@@ -27,6 +27,7 @@ var util = require('util');
 function BinWrapper(opts) {
     events.EventEmitter.call(this);
     opts = opts || {};
+    this.opts = opts;
     this.bin = opts.bin;
 
     if (process.platform === 'win32' && path.extname(this.bin) === '') {
@@ -233,7 +234,17 @@ BinWrapper.prototype._test = function (bin, cmd) {
             self.emit('error', err);
         }
 
-        self.emit(works ? 'success' : 'fail');
+        if (self.opts.version && works) {
+            binCheck(bin, '--version', function (err, works, msg) {
+                if (msg) {
+                    self.emit(msg.indexOf(self.opts.version) !== -1 ? 'success' : 'fail');
+                } else {
+                    self.emit('success');
+                }
+            });
+        } else {
+            self.emit(works ? 'success' : 'fail');
+        }
     });
 
     return this;
