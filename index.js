@@ -37,6 +37,7 @@ function BinWrapper(opts) {
     this.files = {};
     this.urls = { name: this.bin };
     this.dest = opts.dest || process.cwd();
+    this.global = opts.global !== false;
     this.paths = [this.dest];
     this.path = this._find(this.bin) || path.join(this.dest, this.bin);
 }
@@ -207,7 +208,13 @@ BinWrapper.prototype.addSource = function (url) {
  */
 
 BinWrapper.prototype._find = function (bin) {
-    var file = findFile(bin, { path: this.paths, exclude: 'node_modules/.bin' });
+    var opts = { path: this.paths, exclude: 'node_modules/.bin' };
+
+    if (!this.global) {
+        opts.global = false;
+    }
+
+    var file = findFile(bin, opts);
 
     if (file) {
         if (executable.sync(file[0])) {
