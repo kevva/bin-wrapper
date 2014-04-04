@@ -1,21 +1,22 @@
 # bin-wrapper [![Build Status](https://secure.travis-ci.org/kevva/bin-wrapper.png?branch=master)](http://travis-ci.org/kevva/bin-wrapper)
 
-Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies
+> Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies
 
-## Getting started
+## Install
 
-Install with [npm](https://npmjs.org/package/bin-wrapper): `npm install bin-wrapper`
+```bash
+$ npm install --save bin-wrapper
+```
 
-## Examples
+## Usage
 
 ```js
 var BinWrapper = require('bin-wrapper');
-var bin = new BinWrapper({ bin: 'gifsicle', dest: 'vendor' });
+var bin = new BinWrapper({ bin: 'gifsicle', version: '1.71', dest: 'vendor' });
 
 bin
     .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/osx/gifsicle', 'darwin')
     .addUrl('https://raw.github.com/yeoman/node-gifsicle/0.1.4/vendor/linux/x64/gifsicle', 'linux', 'x64')
-    .addFile('https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/win/x64/libjpeg-62.dll', 'windows', 'x64')
     .addSource('http://www.lcdf.org/gifsicle/gifsicle-1.71.tar.gz')
     .check()
     .on('error', function (err) {
@@ -32,7 +33,7 @@ bin
     })
 ```
 
-Get the path to your binary with `bin.path`.
+Get the path to your binary with `bin.path`:
 
 ```js
 console.log(bin.path); // => path/to/vendor/gifsicle
@@ -87,6 +88,20 @@ Default: `undefined`
 
 Set the name of the binary.
 
+### version
+
+Type: `String`  
+Default: `undefined`
+
+Define a specific version.
+
+### global
+
+Type: `Boolean`  
+Default: `true`
+
+Whether to check for a binary globally or not.
+
 ### dest
 
 Type: `String`  
@@ -96,4 +111,4 @@ Destination to download/build binary.
 
 ## License
 
-[MIT License](http://en.wikipedia.org/wiki/MIT_License) (c) [Kevin Mårtensson](http://kevinmartensson.com)
+[MIT License](http://en.wikipedia.org/wiki/MIT_License) © [Kevin Mårtensson](http://kevinmartensson.com)
