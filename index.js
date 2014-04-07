@@ -19,6 +19,8 @@ var util = require('util');
  *
  *   - `bin` The name of the binary
  *   - `dest` Where to download the binary
+ *   - `version` Version of the binary
+ *   - `global` Whether to check for global binaries or not
  *
  * @param {Object} opts
  * @api public
@@ -72,6 +74,8 @@ BinWrapper.prototype.check = function (cmd) {
 
     this._download(dl, this.dest, {
         mode: '0755'
+    }).once('data', function () {
+        self.emit('download');
     }).on('close', function () {
         return self._test(path.join(self.dest, self.bin), cmd);
     });
