@@ -29,7 +29,7 @@
     "download": "^0.1.2",
     "executable": "^0.1.0",
     "find-file": "^0.1.2",
-    "mout": "^0.9.0",
+    "mout": "^0.9.1",
     "rimraf": "^2.2.6",
     "tempfile": "^0.1.2"
   },
