@@ -53,10 +53,11 @@ Accepts a path which the files will be downloaded to.
 
 Define which file to use as the binary.
 
-### .run(cb)
+### .run(cmd, cb)
 
 Runs the search for the binary. If no binary is found it will download the file using the URL
-provided in `.src()`. It will also check that the binary is working by checking it's exit code.
+provided in `.src()`. It will also check that the binary is working by running it using `cmd`
+and checking it's exit code.
 
 ## Options
 

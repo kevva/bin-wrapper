@@ -20,8 +20,8 @@
   ],
   "keywords": [
     "bin",
-    "build",
-    "make",
+    "check",
+    "local",
     "wrapper"
   ],
   "dependencies": {

@@ -165,10 +165,11 @@ BinWrapper.prototype.test = function (cmd, cb) {
  */
 
 BinWrapper.prototype.parse = function (obj) {
+    var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
     var ret = [];
 
     obj.filter(function (o) {
-        if (o.os && o.os === process.platform && o.arch && o.arch === process.arch) {
+        if (o.os && o.os === process.platform && o.arch && o.arch === arch) {
             return ret.push(o);
         } else if (o.os && o.os === process.platform && !o.arch) {
             return ret.push(o);
