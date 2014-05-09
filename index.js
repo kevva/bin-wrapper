@@ -112,7 +112,8 @@ BinWrapper.prototype.run = function (cmd, cb) {
                 });
         }
 
-        self.dest(bin);
+        self.dest(path.dirname(bin));
+        self.use(path.basename(bin));
         cb();
     });
 };
