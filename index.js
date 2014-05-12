@@ -78,7 +78,15 @@ BinWrapper.prototype.use = function (str) {
         return this._use;
     }
 
-    this._use = path.join(this.dest(), str);
+    var opts = { path: this.dest(), global: this.global, exclude: 'node_modules/.bin' };
+    var bin = find(str, opts);
+
+    if (bin && bin.length > 0) {
+        this._use = bin[0];
+    } else {
+        this._use = path.join(this.dest(), str);
+    }
+
     return this;
 };
 
@@ -95,7 +103,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
     var self = this;
 
     this.parse(this.src());
-    this.test(cmd, function (err, bin) {
+    this.test(cmd, function (err) {
         if (err) {
             return download(self.src(), self.dest(), { mode: '0755' })
                 .on('error', function (err) {
@@ -112,8 +120,6 @@ BinWrapper.prototype.run = function (cmd, cb) {
                 });
         }
 
-        self.dest(path.dirname(bin));
-        self.use(path.basename(bin));
         cb();
     });
 };
@@ -127,12 +133,10 @@ BinWrapper.prototype.run = function (cmd, cb) {
  */
 
 BinWrapper.prototype.test = function (cmd, cb) {
-    var opts = { path: this.dest(), global: this.global, exclude: 'node_modules/.bin' };
-    var bin = find(path.basename(this.use()), opts) || [];
     var self = this;
 
-    if (bin.length > 0) {
-        return binCheck(bin[0], cmd, function (err, works) {
+    if (this.use()) {
+        return binCheck(self.use(), cmd, function (err, works) {
             if (err) {
                 return cb(err);
             }
@@ -142,16 +146,16 @@ BinWrapper.prototype.test = function (cmd, cb) {
             }
 
             if (self.opts.version) {
-                return binCheck(bin[0], ['--version'], function (err, works, msg) {
+                return binCheck(self.use(), ['--version'], function (err, works, msg) {
                     if (msg.indexOf(self.opts.version) !== -1) {
-                        return cb(null, bin[0]);
+                        return cb(null, self.use());
                     }
 
                     cb('wrong version');
                 });
             }
 
-            cb(null, bin[0]);
+            cb(null, self.use());
         });
     }
 
