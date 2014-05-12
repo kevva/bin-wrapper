@@ -145,17 +145,7 @@ BinWrapper.prototype.test = function (cmd, cb) {
                 return cb('command failed');
             }
 
-            if (self.opts.version) {
-                return binCheck(self.use(), ['--version'], function (err, works, msg) {
-                    if (msg.indexOf(self.opts.version) !== -1) {
-                        return cb(null, self.use());
-                    }
-
-                    cb('wrong version');
-                });
-            }
-
-            cb(null, self.use());
+            cb();
         });
     }
 

@@ -12,7 +12,7 @@ $ npm install --save bin-wrapper
 
 ```js
 var BinWrapper = require('bin-wrapper');
-var bin = new BinWrapper({ version: 1.80, global: true });
+var bin = new BinWrapper({ global: true });
 
 bin
     .src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/jpegtran.exe', 'win32', 'x64')
@@ -31,15 +31,14 @@ bin
 Get the path to your binary with `bin.use`:
 
 ```js
-console.log(bin.use); // => path/to/vendor/jpegtran.exe
+console.log(bin.use()); // => path/to/vendor/jpegtran.exe
 ```
 
 ## API
 
 ### new BinWrapper(opts)
 
-Creates a new `BinWrapper` instance. Use the `version` option to define a specific
-version and the `global` option to enable or disable global checking.
+Creates a new `BinWrapper` instance. Use the `global` option to enable or disable global checking.
 
 ### .src(str)
 
@@ -60,13 +59,6 @@ provided in `.src()`. It will also check that the binary is working by running i
 and checking it's exit code.
 
 ## Options
-
-### version
-
-Type: `String`  
-Default: `undefined`
-
-Define a specific version.
 
 ### global
 

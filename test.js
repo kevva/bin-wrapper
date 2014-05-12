@@ -13,7 +13,7 @@ describe('BinWrapper()', function () {
     });
 
     it('should verify that a binary is working', function (cb) {
-        var bin = new Bin({ version: '1.80' })
+        var bin = new Bin()
             .src('https://raw.github.com/yeoman/node-gifsicle/0.1.5/vendor/osx/gifsicle', 'darwin')
             .src('https://raw.github.com/yeoman/node-gifsicle/0.1.5/vendor/linux/x64/gifsicle', 'linux', 'x64')
             .dest(path.join(__dirname, 'tmp'))
