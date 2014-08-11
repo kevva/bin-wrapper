@@ -126,7 +126,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
 
     this._test(cmd, function (err) {
         if (err) {
-            var download = new Download();
+            var download = new Download({ mode: 777 });
 
             files.forEach(function (file) {
                 download.get(file, self.dest());
