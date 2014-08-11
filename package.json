@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha --reporter list --timeout 0"
+    "test": "mocha --reporter list --timeout 75000"
   },
   "files": [
     "index.js"
