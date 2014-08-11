@@ -28,7 +28,7 @@ bin
     });
 ```
 
-Get the path to your binary with `bin.use`:
+Get the path to your binary with `bin.use()`:
 
 ```js
 console.log(bin.use()); // => path/to/vendor/jpegtran.exe
