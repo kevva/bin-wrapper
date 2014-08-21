@@ -1,51 +1,77 @@
-/* global afterEach, describe, it */
 'use strict';
 
-var assert = require('assert');
 var Bin = require('./');
 var fs = require('fs');
 var path = require('path');
-var rm = require('rimraf');
+var test = require('ava');
 
-describe('BinWrapper()', function () {
-    afterEach(function (cb) {
-        rm(path.join(__dirname, 'tmp'), cb);
-    });
+test('expose a constructor', function (t) {
+    t.plan(1);
+    t.assert(typeof Bin === 'function');
+});
 
-    it('should verify that a binary is working', function (cb) {
-        var bin = new Bin()
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/osx/gifsicle', 'darwin')
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/linux/x64/gifsicle', 'linux', 'x64')
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/win/x64/gifsicle.exe', 'win32', 'x64')
-            .dest(path.join(__dirname, 'tmp'))
-            .use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+test('add a source', function (t) {
+    t.plan(1);
 
-        bin.run(['--version'], function (err) {
-            assert(!err);
+    var bin = new Bin()
+        .src('http://example.com/gifsicle.tar.gz');
 
-            fs.exists(bin.path(), function (exists) {
-                assert(exists);
-                cb();
-            });
+    t.assert(bin._src[0].url === 'http://example.com/gifsicle.tar.gz');
+});
+
+test('set destination directory', function (t) {
+    t.plan(1);
+
+    var bin = new Bin()
+        .dest(path.join(__dirname, 'tmp'));
+
+    t.assert(bin._dest === path.join(__dirname, 'tmp'));
+});
+
+test('set which file to use as the binary', function (t) {
+    t.plan(1);
+
+    var bin = new Bin()
+        .use('gifsicle');
+
+    t.assert(bin._use === 'gifsicle');
+});
+
+test('should verify that a binary is working', function (t) {
+    t.plan(2);
+
+    var bin = new Bin()
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/osx/gifsicle', 'darwin')
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/linux/x64/gifsicle', 'linux', 'x64')
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/win/x64/gifsicle.exe', 'win32', 'x64')
+        .dest(path.join(__dirname, 'tmp'))
+        .use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+    bin.run(['--version'], function (err) {
+        t.assert(!err);
+
+        fs.exists(bin.path(), function (exists) {
+            t.assert(exists);
         });
     });
+});
 
-    it('should meet the desired version', function (cb) {
-        var bin = new Bin()
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/osx/gifsicle', 'darwin')
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/linux/x64/gifsicle', 'linux', 'x64')
-            .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/win/x64/gifsicle.exe', 'win32', 'x64')
-            .dest(path.join(__dirname, 'tmp'))
-            .use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
-            .version('>=1.71');
+test('should meet the desired version', function (t) {
+    t.plan(2);
 
-        bin.run(['--version'], function (err) {
-            assert(!err);
+    var bin = new Bin()
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/osx/gifsicle', 'darwin')
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/linux/x64/gifsicle', 'linux', 'x64')
+        .src('https://github.com/imagemin/gifsicle-bin/raw/master/vendor/win/x64/gifsicle.exe', 'win32', 'x64')
+        .dest(path.join(__dirname, 'tmp'))
+        .use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
+        .version('>=1.71');
 
-            fs.exists(bin.path(), function (exists) {
-                assert(exists);
-                cb();
-            });
+    bin.run(['--version'], function (err) {
+        t.assert(!err);
+
+        fs.exists(bin.path(), function (exists) {
+            t.assert(exists);
         });
     });
 });

@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha --reporter list --timeout 75000"
+    "test": "node test.js"
   },
   "files": [
     "index.js"
@@ -31,7 +31,6 @@
     "find-file": "^0.1.2"
   },
   "devDependencies": {
-    "mocha": "^1.18.2",
-    "rimraf": "^2.2.6"
+    "ava": "0.0.4"
   }
 }
