@@ -134,12 +134,14 @@ BinWrapper.prototype.run = function (cmd, cb) {
 
             return download.run(function (err) {
                 if (err) {
-                    return cb(err);
+                    cb(err);
+                    return;
                 }
 
                 self._test(cmd, function (err) {
                     if (err) {
-                        return cb(err);
+                        cb(err);
+                        return;
                     }
 
                     cb();
@@ -165,17 +167,20 @@ BinWrapper.prototype._test = function (cmd, cb) {
     if (this.path()) {
         return binCheck(self.path(), cmd, function (err, works) {
             if (err) {
-                return cb(err);
+                cb(err);
+                return;
             }
 
             if (!works) {
-                return cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
+                cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
+                return;
             }
 
             if (self.version()) {
                 return binVersionCheck(self.path(), self.version(), function (err) {
                     if (err) {
-                        return cb(err);
+                        cb(err);
+                        return;
                     }
 
                     cb();
