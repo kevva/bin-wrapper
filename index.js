@@ -12,6 +12,10 @@ var path = require('path');
  */
 
 function BinWrapper() {
+    if (!(this instanceof BinWrapper)) {
+        return new BinWrapper();
+    }
+
     this._src = [];
 }
 
