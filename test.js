@@ -19,6 +19,15 @@ test('add a source', function (t) {
     t.assert(bin._src[0].url === 'http://example.com/gifsicle.tar.gz');
 });
 
+test('add a source to a specific os', function (t) {
+    t.plan(1);
+
+    var bin = new Bin()
+        .src('http://example.com/gifsicle.tar.gz', process.platform);
+
+    t.assert(bin._src[0].os === process.platform);
+});
+
 test('set destination directory', function (t) {
     t.plan(1);
 

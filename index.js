@@ -33,15 +33,12 @@ BinWrapper.prototype.src = function (src, os, arch) {
         return this._src;
     }
 
-    var obj = { url: src, name: path.basename(src) };
-
-    if (os) {
-        obj.os = os;
-    }
-
-    if (arch) {
-        obj.arch = arch;
-    }
+    var obj = {
+        url: src,
+        name: path.basename(src),
+        os: os,
+        arch: arch
+    };
 
     this._src = this._src.concat(obj);
     return this;
