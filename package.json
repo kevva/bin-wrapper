@@ -28,7 +28,7 @@
     "bin-check": "^1.0.0",
     "bin-version-check": "^0.1.0",
     "download": "^1.0.2",
-    "find-file": "^0.1.2"
+    "find-file": "^1.0.0"
   },
   "devDependencies": {
     "ava": "0.0.4"

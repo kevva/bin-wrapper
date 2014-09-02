@@ -2,20 +2,23 @@
 
 var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
-var find = require('find-file');
+var Find = require('find-file');
+var fs = require('fs');
 var path = require('path');
 
 /**
  * Initialize a new `BinWrapper`
  *
+ * @param {Object} opts
  * @api public
  */
 
-function BinWrapper() {
+function BinWrapper(opts) {
     if (!(this instanceof BinWrapper)) {
         return new BinWrapper();
     }
 
+    this.opts = opts || {};
     this._src = [];
 }
 
@@ -77,26 +80,6 @@ BinWrapper.prototype.use = function (bin) {
 };
 
 /**
- * Get the bin path
- *
- * @api public
- */
-
-BinWrapper.prototype.path = function () {
-    var opts = { path: this.dest(), global: this.global, exclude: 'node_modules/.bin' };
-    var bin = find(this.use(), opts);
-    var dir;
-
-    if (bin && bin.length > 0) {
-        dir = bin[0];
-    } else {
-        dir = path.join(this.dest(), this.use());
-    }
-
-    return dir;
-};
-
-/**
  * Define a semver range to test the binary against
  *
  * @param {String} range
@@ -113,7 +96,17 @@ BinWrapper.prototype.version = function (range) {
 };
 
 /**
- * Run bin-wrapper
+ * Get the binary path
+ *
+ * @api public
+ */
+
+BinWrapper.prototype.path = function () {
+    return path.join(this.dest(), this.use());
+};
+
+/**
+ * Run
  *
  * @param {Array} cmd
  * @param {Function} cb
@@ -121,25 +114,22 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.run = function (cmd, cb) {
-    var Download = require('download');
-    var files = this._parse(this.src());
     var self = this;
 
-    this._test(cmd, function (err) {
+    this._path(function (err, file) {
         if (err) {
-            var download = new Download({ mode: 777 });
+            cb(err);
+            return;
+        }
 
-            files.forEach(function (file) {
-                download.get(file, self.dest());
-            });
-
-            return download.run(function (err) {
+        if (!file) {
+            return self._get(function (err) {
                 if (err) {
                     cb(err);
                     return;
                 }
 
-                self._test(cmd, function (err) {
+                self._check(cmd, function (err) {
                     if (err) {
                         cb(err);
                         return;
@@ -150,53 +140,159 @@ BinWrapper.prototype.run = function (cmd, cb) {
             });
         }
 
-        cb();
+        self._check(cmd, function (err) {
+            if (err) {
+                cb(err);
+                return;
+            }
+
+            cb();
+        });
     });
 };
 
 /**
- * Test binary
+ * Check if binary is working
  *
  * @param {Array} cmd
  * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype._test = function (cmd, cb) {
+BinWrapper.prototype._check = function (cmd, cb) {
     var self = this;
 
-    if (this.path()) {
-        return binCheck(self.path(), cmd, function (err, works) {
+    binCheck(this.path(), function (err, works) {
+        if (err) {
+            cb(err);
+            return;
+        }
+
+        if (!works) {
+            cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
+            return;
+        }
+
+        if (self.version()) {
+            return binVersionCheck(self.path(), self.version(), function (err) {
+                if (err) {
+                    cb(err);
+                    return;
+                }
+
+                cb();
+            });
+        }
+
+        cb();
+    });
+};
+
+/**
+ * Get the binary
+ *
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype._get = function (cb) {
+    var files = this._parse(this.src());
+    var self = this;
+    var Download = require('download');
+    var download = new Download({ mode: 777 });
+
+    files.forEach(function(file) {
+        download.get(file, self.dest());
+    });
+
+    download.run(function (err) {
+        if (err) {
+            cb(err);
+            return;
+        }
+
+        cb();
+    });
+};
+
+/**
+ * Search for the binary
+ *
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype._path = function (cb) {
+    var self = this;
+    var find = new Find()
+        .name(this.use())
+        .where(this.dest());
+
+    if (this.opts.global) {
+        find.where(process.env.PATH.split(path.delimiter));
+    }
+
+    find.run(function (err, files) {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                cb();
+                return;
+            }
+
+            cb(err);
+            return;
+        }
+
+        files = files.filter(function (file) {
+            return file.path.indexOf('node_modules/.bin') === -1;
+        });
+
+        if (!files.length) {
+            cb();
+            return;
+        }
+
+        if (self.opts.global) {
+            self._global(files[0].path, cb);
+            return;
+        }
+
+        cb(null, files[0].path);
+    });
+};
+
+/**
+ * Symlink global binaries
+ *
+ * @param {String} file
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype._global = function (file, cb) {
+    var paths = process.env.PATH.split(path.delimiter);
+    var self = this;
+
+    var global = paths.some(function (p) {
+        return path.dirname(file) === p;
+    });
+
+    if (global) {
+        return fs.symlink(file, self.path(), function (err) {
             if (err) {
                 cb(err);
                 return;
             }
 
-            if (!works) {
-                cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
-                return;
-            }
-
-            if (self.version()) {
-                return binVersionCheck(self.path(), self.version(), function (err) {
-                    if (err) {
-                        cb(err);
-                        return;
-                    }
-
-                    cb();
-                });
-            }
-
-            cb();
+            cb(null, self.path());
         });
     }
 
-    cb(new Error('Couldn\'t find the `' + this.use() + '` binary. Make sure it\'s installed and in your $PATH.'));
+    cb(null, file);
 };
 
 /**
- * Parse
+ * Parse sources
  *
  * @param {Object} obj
  * @api private
