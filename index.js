@@ -4,6 +4,7 @@ var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
 var Find = require('find-file');
 var fs = require('fs');
+var mkdir = require('mkdirp');
 var path = require('path');
 
 /**
@@ -232,32 +233,34 @@ BinWrapper.prototype._path = function (cb) {
         find.where(process.env.PATH.split(path.delimiter));
     }
 
-    find.run(function (err, files) {
+    mkdir(this.dest(), function (err) {
         if (err) {
-            if (err.code === 'ENOENT') {
-                cb();
-                return;
-            }
-
             cb(err);
             return;
         }
 
-        files = files.filter(function (file) {
-            return file.path.indexOf('node_modules/.bin') === -1;
+        find.run(function (err, files) {
+            if (err) {
+                cb(err);
+                return;
+            }
+
+            files = files.filter(function (file) {
+                return file.path.indexOf('node_modules/.bin') === -1;
+            });
+
+            if (!files.length) {
+                cb();
+                return;
+            }
+
+            if (self.opts.global) {
+                self._global(files[0].path, cb);
+                return;
+            }
+
+            cb(null, files[0].path);
         });
-
-        if (!files.length) {
-            cb();
-            return;
-        }
-
-        if (self.opts.global) {
-            self._global(files[0].path, cb);
-            return;
-        }
-
-        cb(null, files[0].path);
     });
 };
 
