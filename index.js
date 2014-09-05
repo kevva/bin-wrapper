@@ -103,7 +103,9 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-    return path.join(this.dest(), this.use());
+    var dir = path.join(this.dest(), path.dirname(this.use()));
+    var bin = path.basename(this.use());
+    return path.join(dir, bin);
 };
 
 /**
@@ -200,9 +202,13 @@ BinWrapper.prototype._get = function (cb) {
     var files = this._parse(this.src());
     var self = this;
     var Download = require('download');
-    var download = new Download({ mode: 777 });
+    var download = new Download({
+        extract: true,
+        mode: 777,
+        strip: this.opts.strip
+    });
 
-    files.forEach(function(file) {
+    files.forEach(function (file) {
         download.get(file, self.dest());
     });
 
@@ -225,15 +231,18 @@ BinWrapper.prototype._get = function (cb) {
 
 BinWrapper.prototype._path = function (cb) {
     var self = this;
+    var dir = path.join(this.dest(), path.dirname(this.use()));
+    var bin = path.basename(this.use());
+
     var find = new Find()
-        .name(this.use())
-        .where(this.dest());
+        .name(bin)
+        .where(dir);
 
     if (this.opts.global) {
         find.where(process.env.PATH.split(path.delimiter));
     }
 
-    mkdir(this.dest(), function (err) {
+    mkdir(dir, function (err) {
         if (err) {
             cb(err);
             return;

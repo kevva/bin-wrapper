@@ -1,7 +1,7 @@
 'use strict';
 
 var Bin = require('./');
-var fs = require('fs');
+var exists = require('fs').exists;
 var path = require('path');
 var test = require('ava');
 
@@ -59,8 +59,28 @@ test('should verify that a binary is working', function (t) {
     bin.run(['--version'], function (err) {
         t.assert(!err);
 
-        fs.exists(bin.path(), function (exists) {
-            t.assert(exists);
+        exists(bin.path(), function (exist) {
+            t.assert(exist);
+        });
+    });
+});
+
+test('should download and extract an archive', function (t) {
+    t.plan(2);
+
+    var bin = new Bin({ strip: 1 })
+        .src('https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-macosx.zip', 'darwin')
+        .src('https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-windows.zip', 'win32')
+        .src('https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-linux-x86_64.tar.bz2', 'linux', 'x64')
+        .src('https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-linux-i686.tar.bz2', 'linux', 'x86')
+        .dest(path.join(__dirname, 'tmp'))
+        .use(process.platform === 'win32' ? 'phantomjs.exe' : 'bin/phantomjs');
+
+    bin.run(['--version'], function (err) {
+        t.assert(!err, err);
+
+        exists(bin.path(), function (exist) {
+            t.assert(exist);
         });
     });
 });
@@ -79,8 +99,8 @@ test('should meet the desired version', function (t) {
     bin.run(['--version'], function (err) {
         t.assert(!err);
 
-        fs.exists(bin.path(), function (exists) {
-            t.assert(exists);
+        exists(bin.path(), function (exist) {
+            t.assert(exist);
         });
     });
 });
