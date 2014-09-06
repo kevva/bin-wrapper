@@ -6,6 +6,7 @@ var Find = require('find-file');
 var fs = require('fs');
 var mkdir = require('mkdirp');
 var path = require('path');
+var which = require('npm-which');
 
 /**
  * Initialize a new `BinWrapper`
@@ -255,7 +256,7 @@ BinWrapper.prototype._path = function (cb) {
             }
 
             files = files.filter(function (file) {
-                return file.path.indexOf('node_modules/.bin') === -1;
+                return file.path.indexOf(which.sync(bin)) === -1;
             });
 
             if (!files.length) {

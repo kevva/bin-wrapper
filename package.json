@@ -29,7 +29,8 @@
     "bin-version-check": "^0.1.0",
     "download": "^1.0.2",
     "find-file": "^1.0.0",
-    "mkdirp": "^0.5.0"
+    "mkdirp": "^0.5.0",
+    "npm-which": "^1.0.1"
   },
   "devDependencies": {
     "ava": "0.0.4"
