@@ -6,6 +6,7 @@ var Find = require('find-file');
 var fs = require('fs');
 var mkdir = require('mkdirp');
 var path = require('path');
+var status = require('download-status');
 var which = require('npm-which');
 
 /**
@@ -213,14 +214,16 @@ BinWrapper.prototype._get = function (cb) {
         download.get(file, self.dest());
     });
 
-    download.run(function (err) {
-        if (err) {
-            cb(err);
-            return;
-        }
+    download
+        .use(status())
+        .run(function (err) {
+            if (err) {
+                cb(err);
+                return;
+            }
 
-        cb();
-    });
+            cb();
+        });
 };
 
 /**
