@@ -167,7 +167,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
 BinWrapper.prototype._check = function (cmd, cb) {
     var self = this;
 
-    binCheck(this.path(), function (err, works) {
+    binCheck(this.path(), cmd, function (err, works) {
         if (err) {
             cb(err);
             return;
