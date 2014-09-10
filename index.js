@@ -259,7 +259,11 @@ BinWrapper.prototype._path = function (cb) {
             }
 
             files = files.filter(function (file) {
-                return file.path.indexOf(which.sync(bin)) === -1;
+                try {
+                    return file.path.indexOf(which.sync(bin)) === -1;
+                } catch (e) {
+                    return true;
+                }
             });
 
             if (!files.length) {
