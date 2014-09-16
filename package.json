@@ -26,8 +26,8 @@
   ],
   "dependencies": {
     "bin-check": "^1.0.0",
-    "bin-version-check": "^0.1.0",
-    "download": "^1.0.2",
+    "bin-version-check": "^1.0.0",
+    "download": "^2.0.0",
     "download-status": "^2.0.0",
     "find-file": "^1.0.0",
     "mkdirp": "^0.5.0",
