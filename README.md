@@ -13,7 +13,7 @@ $ npm install --save bin-wrapper
 ```js
 var BinWrapper = require('bin-wrapper');
 
-var bin = new BinWrapper();
+var bin = new BinWrapper()
     .src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/jpegtran.exe', 'win32', 'x64')
     .src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/libjpeg-62.dll', 'win32', 'x64')
     .dest('vendor')
