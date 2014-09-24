@@ -41,7 +41,6 @@ BinWrapper.prototype.src = function (src, os, arch) {
 
     var obj = {
         url: src,
-        name: path.basename(src),
         os: os,
         arch: arch
     };
@@ -206,15 +205,16 @@ BinWrapper.prototype._get = function (cb) {
     var Download = require('download');
     var download = new Download({
         extract: true,
-        mode: 777,
+        mode: 755,
         strip: this.opts.strip
     });
 
     files.forEach(function (file) {
-        download.get(file, self.dest());
+        download.get(file.url);
     });
 
     download
+        .dest(this.dest())
         .use(status())
         .run(function (err) {
             if (err) {
