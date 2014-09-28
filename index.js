@@ -17,12 +17,12 @@ var which = require('npm-which');
  */
 
 function BinWrapper(opts) {
-    if (!(this instanceof BinWrapper)) {
-        return new BinWrapper();
-    }
+	if (!(this instanceof BinWrapper)) {
+		return new BinWrapper();
+	}
 
-    this.opts = opts || {};
-    this._src = [];
+	this.opts = opts || {};
+	this._src = [];
 }
 
 /**
@@ -35,18 +35,18 @@ function BinWrapper(opts) {
  */
 
 BinWrapper.prototype.src = function (src, os, arch) {
-    if (!arguments.length) {
-        return this._src;
-    }
+	if (!arguments.length) {
+		return this._src;
+	}
 
-    var obj = {
-        url: src,
-        os: os,
-        arch: arch
-    };
+	var obj = {
+		url: src,
+		os: os,
+		arch: arch
+	};
 
-    this._src = this._src.concat(obj);
-    return this;
+	this._src = this._src.concat(obj);
+	return this;
 };
 
 /**
@@ -57,12 +57,12 @@ BinWrapper.prototype.src = function (src, os, arch) {
  */
 
 BinWrapper.prototype.dest = function (dest) {
-    if (!arguments.length) {
-        return this._dest;
-    }
+	if (!arguments.length) {
+		return this._dest;
+	}
 
-    this._dest = dest;
-    return this;
+	this._dest = dest;
+	return this;
 };
 
 /**
@@ -73,12 +73,12 @@ BinWrapper.prototype.dest = function (dest) {
  */
 
 BinWrapper.prototype.use = function (bin) {
-    if (!arguments.length) {
-        return this._use;
-    }
+	if (!arguments.length) {
+		return this._use;
+	}
 
-    this._use = bin;
-    return this;
+	this._use = bin;
+	return this;
 };
 
 /**
@@ -89,12 +89,12 @@ BinWrapper.prototype.use = function (bin) {
  */
 
 BinWrapper.prototype.version = function (range) {
-    if (!arguments.length) {
-        return this._version;
-    }
+	if (!arguments.length) {
+		return this._version;
+	}
 
-    this._version = range;
-    return this;
+	this._version = range;
+	return this;
 };
 
 /**
@@ -104,9 +104,9 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-    var dir = path.join(this.dest(), path.dirname(this.use()));
-    var bin = path.basename(this.use());
-    return path.join(dir, bin);
+	var dir = path.join(this.dest(), path.dirname(this.use()));
+	var bin = path.basename(this.use());
+	return path.join(dir, bin);
 };
 
 /**
@@ -118,41 +118,41 @@ BinWrapper.prototype.path = function () {
  */
 
 BinWrapper.prototype.run = function (cmd, cb) {
-    var self = this;
+	var self = this;
 
-    this._path(function (err, file) {
-        if (err) {
-            cb(err);
-            return;
-        }
+	this._path(function (err, file) {
+		if (err) {
+			cb(err);
+			return;
+		}
 
-        if (!file) {
-            return self._get(function (err) {
-                if (err) {
-                    cb(err);
-                    return;
-                }
+		if (!file) {
+			return self._get(function (err) {
+				if (err) {
+					cb(err);
+					return;
+				}
 
-                self._check(cmd, function (err) {
-                    if (err) {
-                        cb(err);
-                        return;
-                    }
+				self._check(cmd, function (err) {
+					if (err) {
+						cb(err);
+						return;
+					}
 
-                    cb();
-                });
-            });
-        }
+					cb();
+				});
+			});
+		}
 
-        self._check(cmd, function (err) {
-            if (err) {
-                cb(err);
-                return;
-            }
+		self._check(cmd, function (err) {
+			if (err) {
+				cb(err);
+				return;
+			}
 
-            cb();
-        });
-    });
+			cb();
+		});
+	});
 };
 
 /**
@@ -164,32 +164,32 @@ BinWrapper.prototype.run = function (cmd, cb) {
  */
 
 BinWrapper.prototype._check = function (cmd, cb) {
-    var self = this;
+	var self = this;
 
-    binCheck(this.path(), cmd, function (err, works) {
-        if (err) {
-            cb(err);
-            return;
-        }
+	binCheck(this.path(), cmd, function (err, works) {
+		if (err) {
+			cb(err);
+			return;
+		}
 
-        if (!works) {
-            cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
-            return;
-        }
+		if (!works) {
+			cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
+			return;
+		}
 
-        if (self.version()) {
-            return binVersionCheck(self.path(), self.version(), function (err) {
-                if (err) {
-                    cb(err);
-                    return;
-                }
+		if (self.version()) {
+			return binVersionCheck(self.path(), self.version(), function (err) {
+				if (err) {
+					cb(err);
+					return;
+				}
 
-                cb();
-            });
-        }
+				cb();
+			});
+		}
 
-        cb();
-    });
+		cb();
+	});
 };
 
 /**
@@ -200,30 +200,29 @@ BinWrapper.prototype._check = function (cmd, cb) {
  */
 
 BinWrapper.prototype._get = function (cb) {
-    var files = this._parse(this.src());
-    var self = this;
-    var Download = require('download');
-    var download = new Download({
-        extract: true,
-        mode: 755,
-        strip: this.opts.strip
-    });
+	var files = this._parse(this.src());
+	var Download = require('download');
+	var download = new Download({
+		extract: true,
+		mode: 755,
+		strip: this.opts.strip
+	});
 
-    files.forEach(function (file) {
-        download.get(file.url);
-    });
+	files.forEach(function (file) {
+		download.get(file.url);
+	});
 
-    download
-        .dest(this.dest())
-        .use(status())
-        .run(function (err) {
-            if (err) {
-                cb(err);
-                return;
-            }
+	download
+		.dest(this.dest())
+		.use(status())
+		.run(function (err) {
+			if (err) {
+				cb(err);
+				return;
+			}
 
-            cb();
-        });
+			cb();
+		});
 };
 
 /**
@@ -234,51 +233,51 @@ BinWrapper.prototype._get = function (cb) {
  */
 
 BinWrapper.prototype._path = function (cb) {
-    var self = this;
-    var dir = path.join(this.dest(), path.dirname(this.use()));
-    var bin = path.basename(this.use());
+	var self = this;
+	var dir = path.join(this.dest(), path.dirname(this.use()));
+	var bin = path.basename(this.use());
 
-    var find = new Find()
-        .name(bin)
-        .where(dir);
+	var find = new Find()
+		.name(bin)
+		.where(dir);
 
-    if (this.opts.global) {
-        find.where(process.env.PATH.split(path.delimiter));
-    }
+	if (this.opts.global) {
+		find.where(process.env.PATH.split(path.delimiter));
+	}
 
-    mkdir(dir, function (err) {
-        if (err) {
-            cb(err);
-            return;
-        }
+	mkdir(dir, function (err) {
+		if (err) {
+			cb(err);
+			return;
+		}
 
-        find.run(function (err, files) {
-            if (err) {
-                cb(err);
-                return;
-            }
+		find.run(function (err, files) {
+			if (err) {
+				cb(err);
+				return;
+			}
 
-            files = files.filter(function (file) {
-                try {
-                    return file.path.indexOf(which.sync(bin)) === -1;
-                } catch (e) {
-                    return true;
-                }
-            });
+			files = files.filter(function (file) {
+				try {
+					return file.path.indexOf(which.sync(bin)) === -1;
+				} catch (e) {
+					return true;
+				}
+			});
 
-            if (!files.length) {
-                cb();
-                return;
-            }
+			if (!files.length) {
+				cb();
+				return;
+			}
 
-            if (self.opts.global) {
-                self._global(files[0].path, cb);
-                return;
-            }
+			if (self.opts.global) {
+				self._global(files[0].path, cb);
+				return;
+			}
 
-            cb(null, files[0].path);
-        });
-    });
+			cb(null, files[0].path);
+		});
+	});
 };
 
 /**
@@ -290,25 +289,25 @@ BinWrapper.prototype._path = function (cb) {
  */
 
 BinWrapper.prototype._global = function (file, cb) {
-    var paths = process.env.PATH.split(path.delimiter);
-    var self = this;
+	var paths = process.env.PATH.split(path.delimiter);
+	var self = this;
 
-    var global = paths.some(function (p) {
-        return path.dirname(file) === p;
-    });
+	var global = paths.some(function (p) {
+		return path.dirname(file) === p;
+	});
 
-    if (global) {
-        return fs.symlink(file, self.path(), function (err) {
-            if (err) {
-                cb(err);
-                return;
-            }
+	if (global) {
+		return fs.symlink(file, self.path(), function (err) {
+			if (err) {
+				cb(err);
+				return;
+			}
 
-            cb(null, self.path());
-        });
-    }
+			cb(null, self.path());
+		});
+	}
 
-    cb(null, file);
+	cb(null, file);
 };
 
 /**
@@ -319,20 +318,20 @@ BinWrapper.prototype._global = function (file, cb) {
  */
 
 BinWrapper.prototype._parse = function (obj) {
-    var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
-    var ret = [];
+	var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
+	var ret = [];
 
-    obj.filter(function (o) {
-        if (o.os && o.os === process.platform && o.arch && o.arch === arch) {
-            return ret.push(o);
-        } else if (o.os && o.os === process.platform && !o.arch) {
-            return ret.push(o);
-        } else if (!o.os && !o.arch) {
-            return ret.push(o);
-        }
-    });
+	obj.filter(function (o) {
+		if (o.os && o.os === process.platform && o.arch && o.arch === arch) {
+			return ret.push(o);
+		} else if (o.os && o.os === process.platform && !o.arch) {
+			return ret.push(o);
+		} else if (!o.os && !o.arch) {
+			return ret.push(o);
+		}
+	});
 
-    return ret;
+	return ret;
 };
 
 /**

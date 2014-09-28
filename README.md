@@ -14,18 +14,18 @@ $ npm install --save bin-wrapper
 var BinWrapper = require('bin-wrapper');
 
 var bin = new BinWrapper()
-    .src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/jpegtran.exe', 'win32', 'x64')
-    .src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/libjpeg-62.dll', 'win32', 'x64')
-    .dest('vendor')
-    .use('jpegtran.exe')
-    .version('>=1.3.0');
+	.src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/jpegtran.exe', 'win32', 'x64')
+	.src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/libjpeg-62.dll', 'win32', 'x64')
+	.dest('vendor')
+	.use('jpegtran.exe')
+	.version('>=1.3.0');
 
 bin.run(['--version'], function (err) {
-    if (err) {
-        throw err;
-    }
+	if (err) {
+		throw err;
+	}
 
-    console.log('jpegtran is working');
+	console.log('jpegtran is working');
 });
 ```
 
