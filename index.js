@@ -204,7 +204,7 @@ BinWrapper.prototype._get = function (cb) {
 	var Download = require('download');
 	var download = new Download({
 		extract: true,
-		mode: 755,
+		mode: parseInt('0755', 8),
 		strip: this.opts.strip
 	});
 
