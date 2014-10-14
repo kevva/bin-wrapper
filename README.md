@@ -1,6 +1,6 @@
 # bin-wrapper [![Build Status](http://img.shields.io/travis/kevva/bin-wrapper.svg?style=flat)](https://travis-ci.org/kevva/bin-wrapper)
 
-> Binary wrapper for Node.js that makes your programs seamlessly available as local dependencies
+> Binary wrapper that makes your programs seamlessly available as local dependencies
 
 ## Install
 
@@ -13,43 +13,70 @@ $ npm install --save bin-wrapper
 ```js
 var BinWrapper = require('bin-wrapper');
 
-var bin = new BinWrapper()
-	.src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/jpegtran.exe', 'win32', 'x64')
-	.src('https://raw.github.com/yeoman/node-jpegtran-bin/0.2.4/vendor/win/x64/libjpeg-62.dll', 'win32', 'x64')
-	.dest('vendor')
-	.use('jpegtran.exe')
-	.version('>=1.3.0');
+var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
+var bin = new Bin()
+	.src(base + '/osx/gifsicle', 'darwin')
+	.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
+	.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
+	.dest(path.join('vendor'))
+	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
+	.version('>=1.71');
 
 bin.run(['--version'], function (err) {
 	if (err) {
 		throw err;
 	}
 
-	console.log('jpegtran is working');
+	console.log('gifsicle is working');
 });
 ```
 
 Get the path to your binary with `bin.path()`:
 
 ```js
-console.log(bin.path()); // => path/to/vendor/jpegtran.exe
+console.log(bin.path()); // => path/to/vendor/gifsicle
 ```
 
 ## API
 
-### new BinWrapper()
+### new BinWrapper(opts)
 
-Creates a new `BinWrapper` instance.
+Creates a new `BinWrapper` instance. The available options are:
+
+* `global`: Whether to check for global binaries or not. Defaults to `false`.
+* `strip`: Strip a number of leading paths from file names on extraction. Defaults to `1`.
 
 ### .src(url, os, arch)
 
+Adds a source to download.
+
+#### url
+
+Type: `String`
+
 Accepts a URL pointing to a file to download.
 
+#### os
+
+Type: `String`
+
+Tie the source to a specific OS.
+
+#### arch
+
+Type: `String`
+
+Tie the source to a specific arch.
+
 ### .dest(dest)
+
+Type: `String`
 
 Accepts a path which the files will be downloaded to.
 
 ### .use(bin)
+
+Type: `String`
 
 Define which file to use as the binary.
 
@@ -59,14 +86,28 @@ Get the full path to your binary.
 
 ### .version(range)
 
+Type: `String`
+
 Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
 the binary against.
 
 ### .run(cmd, cb)
 
-Runs the search for the binary. If no binary is found it will download the file using the URL
-provided in `.src()`. It will also check that the binary is working by running it using `cmd`
-and checking it's exit code.
+Runs the search for the binary. If no binary is found it will download the file 
+using the URL provided in `.src()`.
+
+#### cmd
+
+Type: `Array`
+
+Command to run the binary with. If it exits with code `0` it means that the 
+binary is working.
+
+#### cb(err)
+
+Type: `Function`
+
+Returns nothing but a possible error.
 
 ## License
 
