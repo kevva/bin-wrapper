@@ -2,11 +2,12 @@
 
 var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
-var Find = require('find-file');
-var fs = require('fs');
-var mkdir = require('mkdirp');
+var Download = require('download');
+var globby = require('globby');
 var path = require('path');
+var prefix = require('rc')('npm').prefix;
 var status = require('download-status');
+var symlink = require('lnfs');
 var which = require('npm-which');
 
 /**
@@ -21,12 +22,14 @@ function BinWrapper(opts) {
 		return new BinWrapper();
 	}
 
+	this.env = process.env.PATH.split(path.delimiter);
 	this.opts = opts || {};
+	this.opts.strip = this.opts.strip || 1;
 	this._src = [];
 }
 
 /**
- * Add a file to download
+ * Get or set files to download
  *
  * @param {String} src
  * @param {String} os
@@ -39,18 +42,17 @@ BinWrapper.prototype.src = function (src, os, arch) {
 		return this._src;
 	}
 
-	var obj = {
+	this._src.push({
 		url: src,
 		os: os,
 		arch: arch
-	};
+	});
 
-	this._src = this._src.concat(obj);
 	return this;
 };
 
 /**
- * Define where to download the file to
+ * Get or set the destionation
  *
  * @param {String} dest
  * @api public
@@ -66,7 +68,7 @@ BinWrapper.prototype.dest = function (dest) {
 };
 
 /**
- * Define which file to use as a binary
+ * Get or set the binary
  *
  * @param {String} bin
  * @api public
@@ -82,7 +84,7 @@ BinWrapper.prototype.use = function (bin) {
 };
 
 /**
- * Define a semver range to test the binary against
+ * Get or set a semver range to test the binary against
  *
  * @param {String} range
  * @api public
@@ -106,6 +108,7 @@ BinWrapper.prototype.version = function (range) {
 BinWrapper.prototype.path = function () {
 	var dir = path.join(this.dest(), path.dirname(this.use()));
 	var bin = path.basename(this.use());
+
 	return path.join(dir, bin);
 };
 
@@ -120,51 +123,114 @@ BinWrapper.prototype.path = function () {
 BinWrapper.prototype.run = function (cmd, cb) {
 	var self = this;
 
-	this._path(function (err, file) {
+	if (typeof cmd === 'function' && !cb) {
+		cb = cmd;
+		cmd = ['--version'];
+	}
+
+	this.dirname = path.dirname(this.path());
+	this.basename = path.basename(this.path());
+
+	this.search(function (err, file) {
 		if (err) {
 			cb(err);
 			return;
 		}
 
-		if (!file) {
-			return self._get(function (err) {
+		if (!self.location) {
+			return self.get(function (err) {
 				if (err) {
 					cb(err);
 					return;
 				}
 
-				self._check(cmd, function (err) {
-					if (err) {
-						cb(err);
-						return;
-					}
-
-					cb();
-				});
+				self.test(cmd, cb);
 			});
 		}
 
-		self._check(cmd, function (err) {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			cb();
-		});
+		self.test(cmd, cb);
 	});
 };
 
 /**
- * Check if binary is working
+ * Search for the binary
  *
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype.search = function (cb) {
+	var self = this;
+	var paths = [path.join(this.dirname, this.basename)];
+
+	if (this.opts.global) {
+		this.env.forEach(function (dir) {
+			paths.push(path.join(dir, self.basename));
+		});
+	}
+
+	globby(paths, function (err, files) {
+		if (err) {
+			cb(err);
+			return;
+		}
+
+		if (self.opts.global) {
+			files = files.filter(function (file) {
+				try {
+					return file !== which.sync(self.basename, {
+						env: {
+							NODE_PATH: process.env.NODE_PATH,
+							PATH: prefix ? path.join(prefix, 'bin') : ''
+						}
+					});
+				} catch (err) {
+					return true;
+				}
+			});
+		}
+
+		self.location = files[0] || null;
+
+		if (self.opts.global && self.location) {
+			return self.symlink(cb);
+		}
+
+		cb();
+	});
+};
+
+/**
+ * Symlink global binaries
+ *
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype.symlink = function (cb) {
+	var self = this;
+	var isGlobal = this.env.some(function (p) {
+		return path.dirname(self.location) === p;
+	});
+
+	if (isGlobal) {
+		return symlink(this.location, this.path(), cb);
+	}
+
+	cb();
+};
+
+/**
+ * Check if binary is working
+
  * @param {Array} cmd
  * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype._check = function (cmd, cb) {
+BinWrapper.prototype.test = function (cmd, cb) {
 	var self = this;
+	var version = this.version();
 
 	binCheck(this.path(), cmd, function (err, works) {
 		if (err) {
@@ -173,19 +239,12 @@ BinWrapper.prototype._check = function (cmd, cb) {
 		}
 
 		if (!works) {
-			cb(new Error('The `' + self.use() + '` binary doesn\'t seem to work correctly.'));
+			cb(new Error('The `' + self.basename + '` binary doesn\'t seem to work correctly'));
 			return;
 		}
 
-		if (self.version()) {
-			return binVersionCheck(self.path(), self.version(), function (err) {
-				if (err) {
-					cb(err);
-					return;
-				}
-
-				cb();
-			});
+		if (version) {
+			return binVersionCheck(self.path(), version, cb);
 		}
 
 		cb();
@@ -193,15 +252,13 @@ BinWrapper.prototype._check = function (cmd, cb) {
 };
 
 /**
- * Get the binary
+ * Download files
  *
- * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype._get = function (cb) {
-	var files = this._parse(this.src());
-	var Download = require('download');
+BinWrapper.prototype.get = function (cb) {
+	var files = this.parse(this.src());
 	var download = new Download({
 		extract: true,
 		mode: parseInt('0755', 8),
@@ -212,102 +269,9 @@ BinWrapper.prototype._get = function (cb) {
 		download.get(file.url);
 	});
 
-	download
-		.dest(this.dest())
-		.use(status())
-		.run(function (err) {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			cb();
-		});
-};
-
-/**
- * Search for the binary
- *
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype._path = function (cb) {
-	var self = this;
-	var dir = path.join(this.dest(), path.dirname(this.use()));
-	var bin = path.basename(this.use());
-
-	var find = new Find()
-		.name(bin)
-		.where(dir);
-
-	if (this.opts.global) {
-		find.where(process.env.PATH.split(path.delimiter));
-	}
-
-	mkdir(dir, function (err) {
-		if (err) {
-			cb(err);
-			return;
-		}
-
-		find.run(function (err, files) {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			files = files.filter(function (file) {
-				try {
-					return file.path.indexOf(which.sync(bin)) === -1;
-				} catch (e) {
-					return true;
-				}
-			});
-
-			if (!files.length) {
-				cb();
-				return;
-			}
-
-			if (self.opts.global) {
-				self._global(files[0].path, cb);
-				return;
-			}
-
-			cb(null, files[0].path);
-		});
-	});
-};
-
-/**
- * Symlink global binaries
- *
- * @param {String} file
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype._global = function (file, cb) {
-	var paths = process.env.PATH.split(path.delimiter);
-	var self = this;
-
-	var global = paths.some(function (p) {
-		return path.dirname(file) === p;
-	});
-
-	if (global) {
-		return fs.symlink(file, self.path(), function (err) {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			cb(null, self.path());
-		});
-	}
-
-	cb(null, file);
+	download.dest(this.dest());
+	download.use(status());
+	download.run(cb);
 };
 
 /**
@@ -317,14 +281,15 @@ BinWrapper.prototype._global = function (file, cb) {
  * @api private
  */
 
-BinWrapper.prototype._parse = function (obj) {
+BinWrapper.prototype.parse = function (obj) {
 	var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
+	var platform = process.platform;
 	var ret = [];
 
 	obj.filter(function (o) {
-		if (o.os && o.os === process.platform && o.arch && o.arch === arch) {
+		if (o.os && o.os === platform && o.arch && o.arch === arch) {
 			return ret.push(o);
-		} else if (o.os && o.os === process.platform && !o.arch) {
+		} else if (o.os && o.os === platform && !o.arch) {
 			return ret.push(o);
 		} else if (!o.os && !o.arch) {
 			return ret.push(o);
