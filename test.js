@@ -58,7 +58,7 @@ test('should verify that a binary is working', function (t) {
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
-		t.assert(!err);
+		t.assert(!err, err);
 
 		exists(bin.path(), function (exist) {
 			t.assert(exist);
@@ -100,7 +100,7 @@ test('should meet the desired version', function (t) {
 		.version('>=1.71');
 
 	bin.run(function (err) {
-		t.assert(!err);
+		t.assert(!err, err);
 
 		exists(bin.path(), function (exist) {
 			t.assert(exist);
