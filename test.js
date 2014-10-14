@@ -46,7 +46,7 @@ test('set which file to use as the binary', function (t) {
 	t.assert(bin._use === 'foo');
 });
 
-test('should verify that a binary is working', function (t) {
+test('verify that a binary is working', function (t) {
 	t.plan(2);
 
 	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
@@ -66,7 +66,7 @@ test('should verify that a binary is working', function (t) {
 	});
 });
 
-test('should download and extract an archive', function (t) {
+test('download and extract an archive', function (t) {
 	t.plan(2);
 
 	var base = 'https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7';
@@ -87,7 +87,7 @@ test('should download and extract an archive', function (t) {
 	});
 });
 
-test('should meet the desired version', function (t) {
+test('meet the desired version', function (t) {
 	t.plan(2);
 
 	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
@@ -108,7 +108,7 @@ test('should meet the desired version', function (t) {
 	});
 });
 
-test('should symlink a global binary', function (t) {
+test('symlink a global binary', function (t) {
 	t.plan(3);
 
 	var bin = new Bin({ global: true })
