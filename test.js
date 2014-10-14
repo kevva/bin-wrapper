@@ -1,7 +1,7 @@
 'use strict';
 
 var Bin = require('./');
-var exists = require('fs').exists;
+var fs = require('fs');
 var path = require('path');
 var test = require('ava');
 
@@ -60,8 +60,8 @@ test('should verify that a binary is working', function (t) {
 	bin.run(function (err) {
 		t.assert(!err, err);
 
-		exists(bin.path(), function (exist) {
-			t.assert(exist);
+		fs.exists(bin.path(), function (exists) {
+			t.assert(exists);
 		});
 	});
 });
@@ -81,8 +81,8 @@ test('should download and extract an archive', function (t) {
 	bin.run(function (err) {
 		t.assert(!err, err);
 
-		exists(bin.path(), function (exist) {
-			t.assert(exist);
+		fs.exists(bin.path(), function (exists) {
+			t.assert(exists);
 		});
 	});
 });
@@ -102,8 +102,25 @@ test('should meet the desired version', function (t) {
 	bin.run(function (err) {
 		t.assert(!err, err);
 
-		exists(bin.path(), function (exist) {
-			t.assert(exist);
+		fs.exists(bin.path(), function (exists) {
+			t.assert(exists);
+		});
+	});
+});
+
+test('should symlink a global binary', function (t) {
+	t.plan(3);
+
+	var bin = new Bin({ global: true })
+		.dest(path.join(__dirname, 'tmp'))
+		.use('bash');
+
+	bin.run(function (err) {
+		t.assert(!err, err);
+
+		fs.lstat(bin.path(), function (err, stats) {
+			t.assert(!err, err);
+			t.assert(stats.isSymbolicLink());
 		});
 	});
 });
