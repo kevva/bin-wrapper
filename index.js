@@ -19,7 +19,7 @@ var which = require('npm-which');
 
 function BinWrapper(opts) {
 	if (!(this instanceof BinWrapper)) {
-		return new BinWrapper();
+		return new BinWrapper(opts);
 	}
 
 	this.env = process.env.PATH.split(path.delimiter);
