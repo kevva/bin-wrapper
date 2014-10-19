@@ -261,7 +261,7 @@ BinWrapper.prototype.get = function (cb) {
 	var files = this.parse(this.src());
 	var download = new Download({
 		extract: true,
-		mode: parseInt('0755', 8),
+		mode: '755',
 		strip: this.opts.strip
 	});
 
