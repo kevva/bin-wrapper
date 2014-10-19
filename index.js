@@ -25,6 +25,7 @@ function BinWrapper(opts) {
 	this.env = process.env.PATH.split(path.delimiter);
 	this.opts = opts || {};
 	this.opts.strip = this.opts.strip || 1;
+	this.opts.progress = this.opts.progress !== false;
 	this._src = [];
 }
 
@@ -269,8 +270,11 @@ BinWrapper.prototype.get = function (cb) {
 		download.get(file.url);
 	});
 
+	if (this.opts.progress) {
+		download.use(status());
+	}
+
 	download.dest(this.dest());
-	download.use(status());
 	download.run(cb);
 };
 

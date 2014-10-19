@@ -50,7 +50,7 @@ test('verify that a binary is working', function (t) {
 	t.plan(2);
 
 	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
-	var bin = new Bin()
+	var bin = new Bin({ progress: false })
 		.src(base + '/osx/gifsicle', 'darwin')
 		.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
 		.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
@@ -70,7 +70,7 @@ test('download and extract an archive', function (t) {
 	t.plan(2);
 
 	var base = 'https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7';
-	var bin = new Bin({ strip: 1 })
+	var bin = new Bin({ strip: 1, progress: false })
 		.src(base + '-macosx.zip', 'darwin')
 		.src(base + '-windows.zip', 'win32')
 		.src(base + '-linux-x86_64.tar.bz2', 'linux', 'x64')
@@ -91,7 +91,7 @@ test('meet the desired version', function (t) {
 	t.plan(2);
 
 	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
-	var bin = new Bin()
+	var bin = new Bin({ progress: false })
 		.src(base + '/osx/gifsicle', 'darwin')
 		.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
 		.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
