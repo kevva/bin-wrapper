@@ -24,7 +24,7 @@ function BinWrapper(opts) {
 
 	this.env = process.env.PATH.split(path.delimiter);
 	this.opts = opts || {};
-	this.opts.strip = this.opts.strip || 1;
+	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
 	this.opts.progress = this.opts.progress !== false;
 	this._src = [];
 }
