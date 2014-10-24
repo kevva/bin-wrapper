@@ -31,8 +31,7 @@
     "download-status": "^2.0.0",
     "globby": "^0.1.1",
     "lnfs": "^1.0.0",
-    "npm-which": "^1.0.1",
-    "rc": "^0.5.1"
+    "npm-installed": "^1.0.0"
   },
   "devDependencies": {
     "ava": "^0.0.4"

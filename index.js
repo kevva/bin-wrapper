@@ -5,10 +5,9 @@ var binVersionCheck = require('bin-version-check');
 var Download = require('download');
 var globby = require('globby');
 var path = require('path');
-var prefix = require('rc')('npm').prefix;
 var status = require('download-status');
 var symlink = require('lnfs');
-var which = require('npm-which');
+var which = require('npm-installed');
 
 /**
  * Initialize a new `BinWrapper`
@@ -179,12 +178,7 @@ BinWrapper.prototype.search = function (cb) {
 		if (self.opts.global) {
 			files = files.filter(function (file) {
 				try {
-					return file !== which.sync(self.basename, {
-						env: {
-							NODE_PATH: process.env.NODE_PATH,
-							PATH: prefix ? path.join(prefix, 'bin') : ''
-						}
-					});
+					return file !== which.sync(self.basename);
 				} catch (err) {
 					return true;
 				}
