@@ -1,8 +1,10 @@
 'use strict';
 
-var Bin = require('./');
+var Bin = require('../');
 var fs = require('fs');
+var nock = require('nock');
 var path = require('path');
+var fixture = path.join.bind(path, __dirname, 'fixtures');
 var test = require('ava');
 
 test('expose a constructor', function (t) {
@@ -49,34 +51,14 @@ test('set which file to use as the binary', function (t) {
 test('verify that a binary is working', function (t) {
 	t.plan(2);
 
-	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
+	nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
+
 	var bin = new Bin({ progress: false })
-		.src(base + '/osx/gifsicle', 'darwin')
-		.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
-		.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
+		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(path.join(__dirname, 'tmp'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	bin.run(function (err) {
-		t.assert(!err, err);
-
-		fs.exists(bin.path(), function (exists) {
-			t.assert(exists);
-		});
-	});
-});
-
-test('download and extract an archive', function (t) {
-	t.plan(2);
-
-	var base = 'https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7';
-	var bin = new Bin({ strip: 1, progress: false })
-		.src(base + '-macosx.zip', 'darwin')
-		.src(base + '-windows.zip', 'win32')
-		.src(base + '-linux-x86_64.tar.bz2', 'linux', 'x64')
-		.src(base + '-linux-i686.tar.bz2', 'linux', 'x86')
-		.dest(path.join(__dirname, 'tmp'))
-		.use(process.platform === 'win32' ? 'phantomjs.exe' : 'bin/phantomjs');
 
 	bin.run(function (err) {
 		t.assert(!err, err);
@@ -90,11 +72,12 @@ test('download and extract an archive', function (t) {
 test('meet the desired version', function (t) {
 	t.plan(2);
 
-	var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
+	nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
+
 	var bin = new Bin({ progress: false })
-		.src(base + '/osx/gifsicle', 'darwin')
-		.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
-		.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
+		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(path.join(__dirname, 'tmp'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 		.version('>=1.71');
