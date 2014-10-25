@@ -4,6 +4,7 @@ var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
 var Download = require('download');
 var globby = require('globby');
+var isPathGlobal = require('is-path-global');
 var path = require('path');
 var status = require('download-status');
 var symlink = require('lnfs');
@@ -128,16 +129,13 @@ BinWrapper.prototype.run = function (cmd, cb) {
 		cmd = ['--version'];
 	}
 
-	this.dirname = path.dirname(this.path());
-	this.basename = path.basename(this.path());
-
 	this.search(function (err, file) {
 		if (err) {
 			cb(err);
 			return;
 		}
 
-		if (!self.location) {
+		if (!file) {
 			return self.get(function (err) {
 				if (err) {
 					cb(err);
@@ -161,12 +159,13 @@ BinWrapper.prototype.run = function (cmd, cb) {
 
 BinWrapper.prototype.search = function (cb) {
 	var self = this;
-	var paths = [path.join(this.dirname, this.basename)];
+	var name = path.basename(this.path());
+	var paths = this.path();
 
 	if (this.opts.global) {
-		this.env.forEach(function (dir) {
-			paths.push(path.join(dir, self.basename));
-		});
+		paths = [].concat(paths, this.env.map(function (env) {
+			return path.join(env, name);
+		}));
 	}
 
 	globby(paths, function (err, files) {
@@ -176,43 +175,47 @@ BinWrapper.prototype.search = function (cb) {
 		}
 
 		if (self.opts.global) {
-			files = files.filter(function (file) {
-				try {
-					return file !== which.sync(self.basename);
-				} catch (err) {
-					return true;
-				}
-			});
+			return self.symlink(files, cb);
 		}
 
-		self.location = files[0] || null;
-
-		if (self.opts.global && self.location) {
-			return self.symlink(cb);
-		}
-
-		cb();
+		cb(null, files[0]);
 	});
 };
 
 /**
- * Symlink global binaries
+ * Symlink global binary
  *
+ * @param {Array} files
  * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype.symlink = function (cb) {
+BinWrapper.prototype.symlink = function (files, cb) {
 	var self = this;
-	var isGlobal = this.env.some(function (p) {
-		return path.dirname(self.location) === p;
+	var name = path.basename(this.path());
+
+	files = files.filter(function (file) {
+		try {
+			return file !== which.sync(name);
+		} catch (err) {
+			return true;
+		}
 	});
 
-	if (isGlobal) {
-		return symlink(this.location, this.path(), cb);
+	process.env.PATH = this.env.join(path.delimiter);
+
+	if (files.length && isPathGlobal(files[0])) {
+		return symlink(files[0], self.path(), function (err) {
+			if (err) {
+				cb(err);
+				return;
+			}
+
+			cb(null, files[0]);
+		});
 	}
 
-	cb();
+	cb(null, files[0]);
 };
 
 /**
@@ -225,6 +228,7 @@ BinWrapper.prototype.symlink = function (cb) {
 
 BinWrapper.prototype.test = function (cmd, cb) {
 	var self = this;
+	var name = path.basename(this.path());
 	var version = this.version();
 
 	binCheck(this.path(), cmd, function (err, works) {
@@ -234,7 +238,7 @@ BinWrapper.prototype.test = function (cmd, cb) {
 		}
 
 		if (!works) {
-			cb(new Error('The `' + self.basename + '` binary doesn\'t seem to work correctly'));
+			cb(new Error('The `' + name + '` binary doesn\'t seem to work correctly'));
 			return;
 		}
 
@@ -249,6 +253,7 @@ BinWrapper.prototype.test = function (cmd, cb) {
 /**
  * Download files
  *
+ * @param {Function} cb
  * @api private
  */
 
