@@ -202,8 +202,6 @@ BinWrapper.prototype.symlink = function (files, cb) {
 		}
 	});
 
-	process.env.PATH = this.env.join(path.delimiter);
-
 	if (files.length && isPathGlobal(files[0])) {
 		return symlink(files[0], self.path(), function (err) {
 			if (err) {
