@@ -229,6 +229,11 @@ BinWrapper.prototype.test = function (cmd, cb) {
 	var name = path.basename(this.path());
 	var version = this.version();
 
+	if (this.opts.skip) {
+		cb();
+		return;
+	}
+
 	binCheck(this.path(), cmd, function (err, works) {
 		if (err) {
 			cb(err);

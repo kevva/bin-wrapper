@@ -45,6 +45,7 @@ Creates a new `BinWrapper` instance. The available options are:
 
 * `global`: Whether to check for global binaries or not. Defaults to `false`.
 * `progress`: Show a progress bar when downloading files. Defaults to `true`.
+* `skip`: Whether to skip checking if the binary works or not. Defaults to `false`.
 * `strip`: Strip a number of leading paths from file names on extraction. Defaults to `1`.
 
 ### .src(url, os, arch)

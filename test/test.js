@@ -107,3 +107,25 @@ test('symlink a global binary', function (t) {
 		});
 	});
 });
+
+
+test('skip running test command', function (t) {
+	t.plan(2);
+
+	nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
+
+	var bin = new Bin({ progress: false, skip: true })
+		.src('http://foo.com/gifsicle.tar.gz')
+		.dest(path.join(__dirname, 'tmp'))
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	bin.run(['--shouldNotFailAnyway'], function (err) {
+		t.assert(!err, err);
+
+		fs.exists(bin.path(), function (exists) {
+			t.assert(exists);
+		});
+	});
+});
