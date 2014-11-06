@@ -5,6 +5,7 @@ var fs = require('fs');
 var nock = require('nock');
 var path = require('path');
 var fixture = path.join.bind(path, __dirname, 'fixtures');
+var rm = require('rimraf');
 var test = require('ava');
 
 test('expose a constructor', function (t) {
@@ -49,7 +50,7 @@ test('set which file to use as the binary', function (t) {
 });
 
 test('verify that a binary is working', function (t) {
-	t.plan(2);
+	t.plan(3);
 
 	nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
@@ -57,7 +58,7 @@ test('verify that a binary is working', function (t) {
 
 	var bin = new Bin({ progress: false })
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp'))
+		.dest(path.join(__dirname, 'tmp1'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
@@ -65,12 +66,16 @@ test('verify that a binary is working', function (t) {
 
 		fs.exists(bin.path(), function (exists) {
 			t.assert(exists);
+
+			rm(path.join(__dirname, 'tmp1'), function (err) {
+				t.assert(!err, err);
+			});
 		});
 	});
 });
 
 test('meet the desired version', function (t) {
-	t.plan(2);
+	t.plan(3);
 
 	nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
@@ -78,7 +83,7 @@ test('meet the desired version', function (t) {
 
 	var bin = new Bin({ progress: false })
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp'))
+		.dest(path.join(__dirname, 'tmp2'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 		.version('>=1.71');
 
@@ -87,15 +92,19 @@ test('meet the desired version', function (t) {
 
 		fs.exists(bin.path(), function (exists) {
 			t.assert(exists);
+
+			rm(path.join(__dirname, 'tmp2'), function (err) {
+				t.assert(!err, err);
+			});
 		});
 	});
 });
 
 test('symlink a global binary', function (t) {
-	t.plan(3);
+	t.plan(4);
 
 	var bin = new Bin({ global: true })
-		.dest(path.join(__dirname, 'tmp'))
+		.dest(path.join(__dirname, 'tmp3'))
 		.use('bash');
 
 	bin.run(function (err) {
@@ -104,13 +113,17 @@ test('symlink a global binary', function (t) {
 		fs.lstat(bin.path(), function (err, stats) {
 			t.assert(!err, err);
 			t.assert(stats.isSymbolicLink());
+
+			rm(path.join(__dirname, 'tmp3'), function (err) {
+				t.assert(!err, err);
+			});
 		});
 	});
 });
 
 
 test('skip running test command', function (t) {
-	t.plan(2);
+	t.plan(3);
 
 	nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
@@ -118,7 +131,7 @@ test('skip running test command', function (t) {
 
 	var bin = new Bin({ progress: false, skip: true })
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp'))
+		.dest(path.join(__dirname, 'tmp4'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(['--shouldNotFailAnyway'], function (err) {
@@ -126,6 +139,10 @@ test('skip running test command', function (t) {
 
 		fs.exists(bin.path(), function (exists) {
 			t.assert(exists);
+
+			rm(path.join(__dirname, 'tmp4'), function (err) {
+				t.assert(!err, err);
+			});
 		});
 	});
 });

@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "ava": "^0.0.4",
-    "nock": "^0.48.1"
+    "nock": "^0.48.1",
+    "rimraf": "^2.2.8"
   }
 }
