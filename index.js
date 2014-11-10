@@ -5,6 +5,7 @@ var binVersionCheck = require('bin-version-check');
 var Download = require('download');
 var globby = require('globby');
 var isPathGlobal = require('is-path-global');
+var osFilterObj = require('os-filter-obj');
 var path = require('path');
 var status = require('download-status');
 var symlink = require('lnfs');
@@ -261,7 +262,7 @@ BinWrapper.prototype.test = function (cmd, cb) {
  */
 
 BinWrapper.prototype.get = function (cb) {
-	var files = this.parse(this.src());
+	var files = osFilterObj(this.src());
 	var download = new Download({
 		extract: true,
 		mode: '755',
@@ -278,31 +279,6 @@ BinWrapper.prototype.get = function (cb) {
 
 	download.dest(this.dest());
 	download.run(cb);
-};
-
-/**
- * Parse sources
- *
- * @param {Object} obj
- * @api private
- */
-
-BinWrapper.prototype.parse = function (obj) {
-	var arch = process.arch === 'x64' ? 'x64' : process.arch === 'arm' ? 'arm' : 'x86';
-	var platform = process.platform;
-	var ret = [];
-
-	obj.filter(function (o) {
-		if (o.os && o.os === platform && o.arch && o.arch === arch) {
-			return ret.push(o);
-		} else if (o.os && o.os === platform && !o.arch) {
-			return ret.push(o);
-		} else if (!o.os && !o.arch) {
-			return ret.push(o);
-		}
-	});
-
-	return ret;
 };
 
 /**
