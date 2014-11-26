@@ -146,3 +146,16 @@ test('skip running test command', function (t) {
 		});
 	});
 });
+
+test('error if no binary is found and no source is provided', function (t) {
+	t.plan(2);
+
+	var bin = new Bin({ progress: false })
+		.dest(path.join(__dirname, 'tmp5'))
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	bin.run(function (err) {
+		t.assert(err);
+		t.assert(err.message === 'No binary found matching your system. It\'s probably not supported.');
+	});
+});

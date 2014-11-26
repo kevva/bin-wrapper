@@ -192,7 +192,6 @@ BinWrapper.prototype.search = function (cb) {
  */
 
 BinWrapper.prototype.symlink = function (files, cb) {
-	var self = this;
 	var name = path.basename(this.path());
 
 	files = files.filter(function (file) {
@@ -204,7 +203,7 @@ BinWrapper.prototype.symlink = function (files, cb) {
 	});
 
 	if (files.length && isPathGlobal(files[0])) {
-		return symlink(files[0], self.path(), function (err) {
+		return symlink(files[0], this.path(), function (err) {
 			if (err) {
 				cb(err);
 				return;
@@ -268,6 +267,11 @@ BinWrapper.prototype.get = function (cb) {
 		mode: '755',
 		strip: this.opts.strip
 	});
+
+	if (!files.length) {
+		cb(new Error('No binary found matching your system. It\'s probably not supported.'));
+		return;
+	}
 
 	files.forEach(function (file) {
 		download.get(file.url);
