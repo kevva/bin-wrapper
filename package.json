@@ -27,7 +27,7 @@
   "dependencies": {
     "bin-check": "^1.0.0",
     "bin-version-check": "^1.0.0",
-    "download": "^3.0.1",
+    "download": "kevva/download#73774cebe7b57131b5f14587a0e604683fd2d8db",
     "download-status": "^2.0.0",
     "globby": "^0.1.1",
     "is-path-global": "^1.0.0",
