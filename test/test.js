@@ -13,6 +13,11 @@ test('expose a constructor', function (t) {
 	t.assert(typeof Bin === 'function');
 });
 
+test('return an instance if it called without `new`', function (t) {
+	t.plan(1);
+	t.assert(Bin() instanceof Bin);
+});
+
 test('add a source', function (t) {
 	t.plan(1);
 
@@ -121,7 +126,6 @@ test('symlink a global binary', function (t) {
 	});
 });
 
-
 test('skip running test command', function (t) {
 	t.plan(3);
 
@@ -147,11 +151,46 @@ test('skip running test command', function (t) {
 	});
 });
 
+test('download files even if they are not used', function (t) {
+	t.plan(7);
+
+	nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-darwin.tar.gz'))
+		.get('/gifsicle-win32.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-win32.tar.gz'))
+		.get('/test.js')
+		.replyWithFile(200, __filename);
+
+	var bin = new Bin({ progress: false, strip: 0, skip: true })
+		.src('http://foo.com/gifsicle.tar.gz')
+		.src('http://foo.com/gifsicle-win32.tar.gz')
+		.src('http://foo.com/test.js')
+		.dest(path.join(__dirname, 'tmp5'))
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	bin.run(function (err) {
+		t.assert(!err, err);
+
+		fs.readdir(path.dirname(bin.path()), function (err, paths) {
+			t.assert(!err, err);
+			t.assert(paths.length === 3);
+			t.assert(paths[0] === 'gifsicle');
+			t.assert(paths[1] === 'gifsicle.exe');
+			t.assert(paths[2] === 'test.js');
+
+			rm(path.join(__dirname, 'tmp5'), function (err) {
+				t.assert(!err, err);
+			});
+		});
+	});
+});
+
 test('error if no binary is found and no source is provided', function (t) {
 	t.plan(2);
 
 	var bin = new Bin({ progress: false })
-		.dest(path.join(__dirname, 'tmp5'))
+		.dest(path.join(__dirname, 'tmp6'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
