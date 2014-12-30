@@ -3,6 +3,7 @@
 var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
 var Download = require('download');
+var find = require('findup-sync');
 var globby = require('globby');
 var isPathGlobal = require('is-path-global');
 var osFilterObj = require('os-filter-obj');
@@ -63,8 +64,11 @@ BinWrapper.prototype.src = function (src, os, arch) {
 
 BinWrapper.prototype.dest = function (dest) {
 	if (!arguments.length && !this._dest) {
-		this._dest = tempfile();
-		return this._dest;
+		if (this.pkg()) {
+			this._dest = this.pkg();
+		} else {
+			this._dest = tempfile();
+		}
 	}
 
 	if (!arguments.length) {
@@ -289,6 +293,25 @@ BinWrapper.prototype.get = function (cb) {
 
 	download.dest(this.dest());
 	download.run(cb);
+};
+
+/**
+ * Get destination from package.json
+ *
+ * @api private
+ */
+
+BinWrapper.prototype.pkg = function () {
+	delete require.cache[__filename];
+
+	var dir = path.dirname(module.parent.filename);
+	var pkg = require(find('package.json', { cwd: dir }));
+
+	if (pkg.bin[path.basename(this.use())]) {
+		return path.resolve(path.dirname(pkg.bin[path.basename(this.use())]));
+	}
+
+	return path.resolve(path.dirname(pkg.bin));
 };
 
 /**

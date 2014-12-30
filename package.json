@@ -29,6 +29,7 @@
     "bin-version-check": "^2.1.0",
     "download": "^3.3.0",
     "download-status": "^2.0.0",
+    "findup-sync": "^0.2.1",
     "globby": "^1.0.0",
     "is-path-global": "^1.0.0",
     "lnfs": "^1.0.0",
