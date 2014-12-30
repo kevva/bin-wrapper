@@ -55,7 +55,7 @@ BinWrapper.prototype.src = function (src, os, arch) {
 };
 
 /**
- * Get or set the destionation
+ * Get or set the destination
  *
  * @param {String} dest
  * @api public
