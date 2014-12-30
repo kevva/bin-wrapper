@@ -64,7 +64,6 @@ BinWrapper.prototype.src = function (src, os, arch) {
 BinWrapper.prototype.dest = function (dest) {
 	if (!arguments.length && !this._dest) {
 		this._dest = tempfile();
-		return this._dest;
 	}
 
 	if (!arguments.length) {
