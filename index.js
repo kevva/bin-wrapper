@@ -9,6 +9,7 @@ var osFilterObj = require('os-filter-obj');
 var path = require('path');
 var status = require('download-status');
 var symlink = require('lnfs');
+var tempfile = require('tempfile');
 var which = require('npm-installed');
 
 /**
@@ -61,6 +62,11 @@ BinWrapper.prototype.src = function (src, os, arch) {
  */
 
 BinWrapper.prototype.dest = function (dest) {
+	if (!arguments.length && !this._dest) {
+		this._dest = tempfile();
+		return this._dest;
+	}
+
 	if (!arguments.length) {
 		return this._dest;
 	}
