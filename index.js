@@ -22,7 +22,6 @@ function BinWrapper(opts) {
 
 	this.opts = opts || {};
 	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
-	this._src = [];
 }
 
 /**
@@ -39,6 +38,7 @@ BinWrapper.prototype.src = function (src, os, arch) {
 		return this._src;
 	}
 
+	this._src = this._src || [];
 	this._src.push({
 		url: src,
 		os: os,
