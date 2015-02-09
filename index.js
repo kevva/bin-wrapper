@@ -130,19 +130,20 @@ BinWrapper.prototype.run = function (cmd, cb) {
 			return;
 		}
 
-		this.runCheck(cb);
+		this.runCheck(cmd, cb);
 	}.bind(this));
 };
 
 /**
  * Run binary check
  *
+ * @param {Array} cmd
  * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype.runCheck = function (cb) {
-	binCheck(this.path(), function (err, works) {
+BinWrapper.prototype.runCheck = function (cmd, cb) {
+	binCheck(this.path(), cmd, function (err, works) {
 		if (err) {
 			cb(err);
 			return;
