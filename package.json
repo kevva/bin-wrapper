@@ -29,9 +29,6 @@
     "bin-version-check": "^2.1.0",
     "download": "^4.0.1-rc.1",
     "globby": "^1.0.0",
-    "is-path-global": "^1.0.0",
-    "lnfs": "^1.0.0",
-    "npm-installed": "^1.0.0",
     "os-filter-obj": "^1.0.0",
     "tempfile": "^1.1.0"
   },

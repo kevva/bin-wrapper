@@ -43,7 +43,6 @@ console.log(bin.path()); // => path/to/vendor/gifsicle
 
 Creates a new `BinWrapper` instance. The available options are:
 
-* `global`: Whether to check for global binaries or not. Defaults to `false`.
 * `skip`: Whether to skip checking if the binary works or not. Defaults to `false`.
 * `strip`: Strip a number of leading paths from file names on extraction. Defaults to `1`.
 

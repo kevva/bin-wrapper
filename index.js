@@ -4,12 +4,9 @@ var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
 var Download = require('download');
 var globby = require('globby');
-var isPathGlobal = require('is-path-global');
 var osFilterObj = require('os-filter-obj');
 var path = require('path');
-var symlink = require('lnfs');
 var tempfile = require('tempfile');
-var which = require('npm-installed');
 
 /**
  * Initialize a new `BinWrapper`
@@ -23,7 +20,6 @@ function BinWrapper(opts) {
 		return new BinWrapper(opts);
 	}
 
-	this.env = process.env.PATH.split(path.delimiter);
 	this.opts = opts || {};
 	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
 	this._src = [];
@@ -163,60 +159,15 @@ BinWrapper.prototype.run = function (cmd, cb) {
 
 BinWrapper.prototype.search = function (cb) {
 	var self = this;
-	var name = path.basename(this.path());
-	var paths = this.path();
 
-	if (this.opts.global) {
-		paths = [].concat(paths, this.env.map(function (env) {
-			return path.join(env, name);
-		}));
-	}
-
-	globby(paths, function (err, files) {
+	globby(this.path(), function (err, files) {
 		if (err) {
 			cb(err);
 			return;
 		}
 
-		if (self.opts.global) {
-			return self.symlink(files, cb);
-		}
-
 		cb(null, files[0]);
 	});
-};
-
-/**
- * Symlink global binary
- *
- * @param {Array} files
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype.symlink = function (files, cb) {
-	var name = path.basename(this.path());
-
-	files = files.filter(function (file) {
-		try {
-			return file !== which.sync(name);
-		} catch (err) {
-			return true;
-		}
-	});
-
-	if (files.length && isPathGlobal(files[0])) {
-		return symlink(files[0], this.path(), function (err) {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			cb(null, files[0]);
-		});
-	}
-
-	cb(null, files[0]);
 };
 
 /**

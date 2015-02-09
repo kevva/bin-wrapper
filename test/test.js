@@ -105,27 +105,6 @@ test('meet the desired version', function (t) {
 	});
 });
 
-test('symlink a global binary', function (t) {
-	t.plan(4);
-
-	var bin = new Bin({ global: true })
-		.dest(path.join(__dirname, 'tmp3'))
-		.use('bash');
-
-	bin.run(function (err) {
-		t.assert(!err, err);
-
-		fs.lstat(bin.path(), function (err, stats) {
-			t.assert(!err, err);
-			t.assert(stats.isSymbolicLink());
-
-			rm(path.join(__dirname, 'tmp3'), function (err) {
-				t.assert(!err, err);
-			});
-		});
-	});
-});
-
 test('skip running test command', function (t) {
 	t.plan(3);
 
