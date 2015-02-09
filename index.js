@@ -6,7 +6,6 @@ var Download = require('download');
 var globby = require('globby');
 var osFilterObj = require('os-filter-obj');
 var path = require('path');
-var tempfile = require('tempfile');
 
 /**
  * Initialize a new `BinWrapper`
@@ -56,10 +55,6 @@ BinWrapper.prototype.src = function (src, os, arch) {
  */
 
 BinWrapper.prototype.dest = function (dest) {
-	if (!arguments.length && !this._dest) {
-		this._dest = tempfile();
-	}
-
 	if (!arguments.length) {
 		return this._dest;
 	}
