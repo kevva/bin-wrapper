@@ -96,16 +96,13 @@ BinWrapper.prototype.version = function (range) {
 };
 
 /**
- * Get the binary path
+ * Get path to the binary
  *
  * @api public
  */
 
 BinWrapper.prototype.path = function () {
-	var dir = path.join(this.dest(), path.dirname(this.use()));
-	var bin = path.basename(this.use());
-
-	return path.join(dir, bin);
+	return path.join(this.dest(), this.use());
 };
 
 /**
