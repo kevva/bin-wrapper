@@ -1,6 +1,6 @@
 'use strict';
 
-var Bin = require('../');
+var BinWrapper = require('../');
 var fs = require('fs');
 var nock = require('nock');
 var path = require('path');
@@ -10,18 +10,18 @@ var test = require('ava');
 
 test('expose a constructor', function (t) {
 	t.plan(1);
-	t.assert(typeof Bin === 'function');
+	t.assert(typeof BinWrapper === 'function');
 });
 
 test('return an instance if it called without `new`', function (t) {
 	t.plan(1);
-	t.assert(Bin() instanceof Bin);
+	t.assert(BinWrapper() instanceof BinWrapper);
 });
 
 test('add a source', function (t) {
 	t.plan(1);
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.src('http://foo.com/bar.tar.gz');
 
 	t.assert(bin._src[0].url === 'http://foo.com/bar.tar.gz');
@@ -30,7 +30,7 @@ test('add a source', function (t) {
 test('add a source to a specific os', function (t) {
 	t.plan(1);
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.src('http://foo.com', process.platform);
 
 	t.assert(bin._src[0].os === process.platform);
@@ -39,7 +39,7 @@ test('add a source to a specific os', function (t) {
 test('set destination directory', function (t) {
 	t.plan(1);
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.dest(path.join(__dirname, 'foo'));
 
 	t.assert(bin._dest === path.join(__dirname, 'foo'));
@@ -48,84 +48,74 @@ test('set destination directory', function (t) {
 test('set which file to use as the binary', function (t) {
 	t.plan(1);
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.use('foo');
 
 	t.assert(bin._use === 'foo');
 });
 
-test('verify that a binary is working', function (t) {
-	t.plan(3);
+test('set a version range to test against', function (t) {
+	t.plan(1);
 
-	nock('http://foo.com')
+	var bin = new BinWrapper()
+		.version('1.0.0');
+
+	t.assert(bin._version === '1.0.0');
+});
+
+test('get the binary path', function (t) {
+	t.plan(1);
+
+	var bin = new BinWrapper()
+		.dest('tmp')
+		.use('foo');
+
+	t.assert(bin.path() === 'tmp/foo');
+});
+
+test('verify that a binary is working', function (t) {
+	t.plan(4);
+
+	var scope = nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp1'))
+		.dest(path.join(__dirname, 't0'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
 		t.assert(!err, err);
+		t.assert(fs.existsSync(bin.path()));
+		t.assert(scope.isDone());
 
-		fs.exists(bin.path(), function (exists) {
-			t.assert(exists);
-
-			rm(path.join(__dirname, 'tmp1'), function (err) {
-				t.assert(!err, err);
-			});
+		rm(bin.dest(), function (err) {
+			t.assert(!err, err);
 		});
 	});
 });
 
 test('meet the desired version', function (t) {
-	t.plan(3);
+	t.plan(4);
 
-	nock('http://foo.com')
+	var scope = nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
 
-	var bin = new Bin()
+	var bin = new BinWrapper()
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp2'))
+		.dest(path.join(__dirname, 't1'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 		.version('>=1.71');
 
 	bin.run(function (err) {
 		t.assert(!err, err);
+		t.assert(fs.existsSync(bin.path()));
+		t.assert(scope.isDone());
 
-		fs.exists(bin.path(), function (exists) {
-			t.assert(exists);
-
-			rm(path.join(__dirname, 'tmp2'), function (err) {
-				t.assert(!err, err);
-			});
-		});
-	});
-});
-
-test('skip running test command', function (t) {
-	t.plan(3);
-
-	nock('http://foo.com')
-		.get('/gifsicle.tar.gz')
-		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
-
-	var bin = new Bin({ skip: true })
-		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(path.join(__dirname, 'tmp4'))
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	bin.run(['--shouldNotFailAnyway'], function (err) {
-		t.assert(!err, err);
-
-		fs.exists(bin.path(), function (exists) {
-			t.assert(exists);
-
-			rm(path.join(__dirname, 'tmp4'), function (err) {
-				t.assert(!err, err);
-			});
+		rm(bin.dest(), function (err) {
+			t.assert(!err, err);
 		});
 	});
 });
@@ -133,7 +123,7 @@ test('skip running test command', function (t) {
 test('download files even if they are not used', function (t) {
 	t.plan(7);
 
-	nock('http://foo.com')
+	var scope = nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-darwin.tar.gz'))
 		.get('/gifsicle-win32.tar.gz')
@@ -141,26 +131,48 @@ test('download files even if they are not used', function (t) {
 		.get('/test.js')
 		.replyWithFile(200, __filename);
 
-	var bin = new Bin({ strip: 0, skip: true })
+	var bin = new BinWrapper({strip: 0, skipCheck: true})
 		.src('http://foo.com/gifsicle.tar.gz')
 		.src('http://foo.com/gifsicle-win32.tar.gz')
 		.src('http://foo.com/test.js')
-		.dest(path.join(__dirname, 'tmp5'))
+		.dest(path.join(__dirname, 't2'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
+		var files = fs.readdirSync(bin.dest());
+
 		t.assert(!err, err);
+		t.assert(scope.isDone());
+		t.assert(files.length === 3);
+		t.assert(files[0] === 'gifsicle');
+		t.assert(files[1] === 'gifsicle.exe');
+		t.assert(files[2] === 'test.js');
 
-		fs.readdir(path.dirname(bin.path()), function (err, paths) {
+		rm(bin.dest(), function (err) {
 			t.assert(!err, err);
-			t.assert(paths.length === 3);
-			t.assert(paths[0] === 'gifsicle');
-			t.assert(paths[1] === 'gifsicle.exe');
-			t.assert(paths[2] === 'test.js');
+		});
+	});
+});
 
-			rm(path.join(__dirname, 'tmp5'), function (err) {
-				t.assert(!err, err);
-			});
+test('skip running binary check', function (t) {
+	t.plan(4);
+
+	var scope = nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
+
+	var bin = new BinWrapper({skipCheck: true})
+		.src('http://foo.com/gifsicle.tar.gz')
+		.dest(path.join(__dirname, 't3'))
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	bin.run(['--shouldNotFailAnyway'], function (err) {
+		t.assert(!err, err);
+		t.assert(fs.existsSync(bin.path()));
+		t.assert(scope.isDone());
+
+		rm(bin.dest(), function (err) {
+			t.assert(!err, err);
 		});
 	});
 });
@@ -168,8 +180,8 @@ test('download files even if they are not used', function (t) {
 test('error if no binary is found and no source is provided', function (t) {
 	t.plan(2);
 
-	var bin = new Bin()
-		.dest(path.join(__dirname, 'tmp6'))
+	var bin = new BinWrapper()
+		.dest(path.join(__dirname, 't4'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {

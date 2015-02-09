@@ -114,89 +114,74 @@ BinWrapper.prototype.path = function () {
  */
 
 BinWrapper.prototype.run = function (cmd, cb) {
-	var self = this;
-
 	if (typeof cmd === 'function' && !cb) {
 		cb = cmd;
 		cmd = ['--version'];
 	}
 
-	this.search(function (err, file) {
+	this.findExisting(function (err, files) {
 		if (err) {
 			cb(err);
 			return;
 		}
 
-		if (!file) {
-			return self.get(function (err) {
-				if (err) {
-					cb(err);
-					return;
-				}
-
-				self.test(cmd, cb);
-			});
+		if (this.opts.skipCheck) {
+			cb();
+			return;
 		}
 
-		self.test(cmd, cb);
-	});
+		this.runCheck(cb);
+	}.bind(this));
 };
 
 /**
- * Search for the binary
+ * Run binary check
  *
  * @param {Function} cb
  * @api private
  */
 
-BinWrapper.prototype.search = function (cb) {
-	var self = this;
-
-	globby(this.path(), function (err, files) {
-		if (err) {
-			cb(err);
-			return;
-		}
-
-		cb(null, files[0]);
-	});
-};
-
-/**
- * Check if binary is working
-
- * @param {Array} cmd
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype.test = function (cmd, cb) {
-	var self = this;
-	var name = path.basename(this.path());
-	var version = this.version();
-
-	if (this.opts.skip) {
-		cb();
-		return;
-	}
-
-	binCheck(this.path(), cmd, function (err, works) {
+BinWrapper.prototype.runCheck = function (cb) {
+	binCheck(this.path(), function (err, works) {
 		if (err) {
 			cb(err);
 			return;
 		}
 
 		if (!works) {
-			cb(new Error('The `' + name + '` binary doesn\'t seem to work correctly'));
+			cb(new Error('The `' + this.path() + '` binary doesn\'t seem to work correctly'));
 			return;
 		}
 
-		if (version) {
-			return binVersionCheck(self.path(), version, cb);
+		if (this.version()) {
+			return binVersionCheck(this.path(), this.version(), cb);
 		}
 
 		cb();
-	});
+	}.bind(this));
+};
+
+/**
+ * Find existing files
+ *
+ * @param {Function} cb
+ * @api private
+ */
+
+BinWrapper.prototype.findExisting = function (cb) {
+	globby(this.path(), function (err, files) {
+		if (err) {
+			cb(err);
+			return;
+		}
+
+		if (!files.length) {
+			this.download(cb);
+			return;
+		}
+
+		cb(null, files);
+	}.bind(this));
 };
 
 /**
@@ -206,7 +191,7 @@ BinWrapper.prototype.test = function (cmd, cb) {
  * @api private
  */
 
-BinWrapper.prototype.get = function (cb) {
+BinWrapper.prototype.download = function (cb) {
 	var files = osFilterObj(this.src());
 	var download = new Download({
 		extract: true,
@@ -223,8 +208,9 @@ BinWrapper.prototype.get = function (cb) {
 		download.get(file.url);
 	});
 
-	download.dest(this.dest());
-	download.run(cb);
+	download
+		.dest(this.dest())
+		.run(cb);
 };
 
 /**
