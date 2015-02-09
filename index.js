@@ -7,7 +7,6 @@ var globby = require('globby');
 var isPathGlobal = require('is-path-global');
 var osFilterObj = require('os-filter-obj');
 var path = require('path');
-var status = require('download-status');
 var symlink = require('lnfs');
 var tempfile = require('tempfile');
 var which = require('npm-installed');
@@ -27,7 +26,6 @@ function BinWrapper(opts) {
 	this.env = process.env.PATH.split(path.delimiter);
 	this.opts = opts || {};
 	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
-	this.opts.progress = this.opts.progress !== false;
 	this._src = [];
 }
 
@@ -281,10 +279,6 @@ BinWrapper.prototype.get = function (cb) {
 	files.forEach(function (file) {
 		download.get(file.url);
 	});
-
-	if (this.opts.progress) {
-		download.use(status());
-	}
 
 	download.dest(this.dest());
 	download.run(cb);

@@ -61,7 +61,7 @@ test('verify that a binary is working', function (t) {
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
 
-	var bin = new Bin({ progress: false })
+	var bin = new Bin()
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(path.join(__dirname, 'tmp1'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
@@ -86,7 +86,7 @@ test('meet the desired version', function (t) {
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
 
-	var bin = new Bin({ progress: false })
+	var bin = new Bin()
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(path.join(__dirname, 'tmp2'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
@@ -133,7 +133,7 @@ test('skip running test command', function (t) {
 		.get('/gifsicle.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
 
-	var bin = new Bin({ progress: false, skip: true })
+	var bin = new Bin({ skip: true })
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(path.join(__dirname, 'tmp4'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
@@ -162,7 +162,7 @@ test('download files even if they are not used', function (t) {
 		.get('/test.js')
 		.replyWithFile(200, __filename);
 
-	var bin = new Bin({ progress: false, strip: 0, skip: true })
+	var bin = new Bin({ strip: 0, skip: true })
 		.src('http://foo.com/gifsicle.tar.gz')
 		.src('http://foo.com/gifsicle-win32.tar.gz')
 		.src('http://foo.com/test.js')
@@ -189,7 +189,7 @@ test('download files even if they are not used', function (t) {
 test('error if no binary is found and no source is provided', function (t) {
 	t.plan(2);
 
-	var bin = new Bin({ progress: false })
+	var bin = new Bin()
 		.dest(path.join(__dirname, 'tmp6'))
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
