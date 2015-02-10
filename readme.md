@@ -41,12 +41,23 @@ console.log(bin.path()); // => path/to/vendor/gifsicle
 
 ### new BinWrapper(opts)
 
-Creates a new `BinWrapper` instance. The available options are:
+Creates a new `BinWrapper` instance.
 
-* `skipCheck`: Whether to skip checking if the binary works or not. Defaults to `false`.
-* `strip`: Strip a number of leading paths from file names on extraction. Defaults to `1`.
+#### opts.skipCheck
 
-### .src(url, os, arch)
+Type: `Boolean`  
+Default: `false`
+
+Whether to skip the binary check or not.
+
+#### opts.strip
+
+Type: `Number`  
+Default: `1`
+
+Strip a number of leading paths from file names on extraction. 
+
+### .src(url, [os], [arch])
 
 Adds a source to download.
 
@@ -70,11 +81,15 @@ Tie the source to a specific arch.
 
 ### .dest(dest)
 
+#### dest
+
 Type: `String`
 
 Accepts a path which the files will be downloaded to.
 
 ### .use(bin)
+
+#### bin
 
 Type: `String`
 
@@ -82,23 +97,26 @@ Define which file to use as the binary.
 
 ### .path()
 
-Get the full path to your binary.
+Returns the full path to your binary.
 
 ### .version(range)
+
+#### range
 
 Type: `String`
 
 Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
 the binary against.
 
-### .run(cmd, cb)
+### .run([cmd], cb)
 
 Runs the search for the binary. If no binary is found it will download the file 
 using the URL provided in `.src()`.
 
 #### cmd
 
-Type: `Array`
+Type: `Array`  
+Default: `['--version']`
 
 Command to run the binary with. If it exits with code `0` it means that the 
 binary is working.
