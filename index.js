@@ -3,7 +3,7 @@
 var binCheck = require('bin-check');
 var binVersionCheck = require('bin-version-check');
 var Download = require('download');
-var globby = require('globby');
+var fs = require('fs');
 var osFilterObj = require('os-filter-obj');
 var path = require('path');
 
@@ -119,7 +119,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
 		cmd = ['--version'];
 	}
 
-	this.findExisting(function (err, files) {
+	this.findExisting(function (err) {
 		if (err) {
 			cb(err);
 			return;
@@ -170,18 +170,18 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
  */
 
 BinWrapper.prototype.findExisting = function (cb) {
-	globby(this.path(), function (err, files) {
+	fs.stat(this.path(), function (err) {
+		if (err && err.code === 'ENOENT') {
+			this.download(cb);
+			return;
+		}
+
 		if (err) {
 			cb(err);
 			return;
 		}
 
-		if (!files.length) {
-			this.download(cb);
-			return;
-		}
-
-		cb(null, files);
+		cb();
 	}.bind(this));
 };
 
