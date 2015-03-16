@@ -1,11 +1,13 @@
 'use strict';
 
-var binCheck = require('bin-check');
-var binVersionCheck = require('bin-version-check');
-var Download = require('download');
 var fs = require('fs');
-var osFilterObj = require('os-filter-obj');
+var lazyReq = require('lazy-req')(require);
 var path = require('path');
+
+var binCheck = lazyReq('bin-check');
+var binVersionCheck = lazyReq('bin-version-check');
+var Download = lazyReq('download');
+var osFilterObj = lazyReq('os-filter-obj');
 
 /**
  * Initialize a new `BinWrapper`
@@ -143,7 +145,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
  */
 
 BinWrapper.prototype.runCheck = function (cmd, cb) {
-	binCheck(this.path(), cmd, function (err, works) {
+	binCheck()(this.path(), cmd, function (err, works) {
 		if (err) {
 			cb(err);
 			return;
@@ -155,7 +157,7 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
 		}
 
 		if (this.version()) {
-			return binVersionCheck(this.path(), this.version(), cb);
+			return binVersionCheck()(this.path(), this.version(), cb);
 		}
 
 		cb();
@@ -193,8 +195,8 @@ BinWrapper.prototype.findExisting = function (cb) {
  */
 
 BinWrapper.prototype.download = function (cb) {
-	var files = osFilterObj(this.src());
-	var download = new Download({
+	var files = osFilterObj()(this.src());
+	var download = new Download()({
 		extract: true,
 		mode: '755',
 		strip: this.opts.strip
