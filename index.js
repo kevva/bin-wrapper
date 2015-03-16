@@ -1,9 +1,8 @@
 'use strict';
 
 var fs = require('fs');
-var lazyReq = require('lazy-req')(require);
 var path = require('path');
-
+var lazyReq = require('lazy-req')(require);
 var binCheck = lazyReq('bin-check');
 var binVersionCheck = lazyReq('bin-version-check');
 var Download = lazyReq('download');
@@ -24,6 +23,8 @@ function BinWrapper(opts) {
 	this.opts = opts || {};
 	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
 }
+
+module.exports = BinWrapper;
 
 /**
  * Get or set files to download
@@ -215,9 +216,3 @@ BinWrapper.prototype.download = function (cb) {
 		.dest(this.dest())
 		.run(cb);
 };
-
-/**
- * Module exports
- */
-
-module.exports = BinWrapper;

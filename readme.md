@@ -2,11 +2,13 @@
 
 > Binary wrapper that makes your programs seamlessly available as local dependencies
 
+
 ## Install
 
-```sh
+```
 $ npm install --save bin-wrapper
 ```
+
 
 ## Usage
 
@@ -23,10 +25,6 @@ var bin = new BinWrapper()
 	.version('>=1.71');
 
 bin.run(['--version'], function (err) {
-	if (err) {
-		throw err;
-	}
-
 	console.log('gifsicle is working');
 });
 ```
@@ -37,22 +35,23 @@ Get the path to your binary with `bin.path()`:
 console.log(bin.path()); // => path/to/vendor/gifsicle
 ```
 
+
 ## API
 
-### new BinWrapper(opts)
+### new BinWrapper(options)
 
 Creates a new `BinWrapper` instance.
 
-#### opts.skipCheck
+#### options.skipCheck
 
-Type: `Boolean`  
+Type: `boolean`  
 Default: `false`
 
 Whether to skip the binary check or not.
 
-#### opts.strip
+#### options.strip
 
-Type: `Number`  
+Type: `number`  
 Default: `1`
 
 Strip a number of leading paths from file names on extraction. 
@@ -63,19 +62,19 @@ Adds a source to download.
 
 #### url
 
-Type: `String`
+Type: `string`
 
 Accepts a URL pointing to a file to download.
 
 #### os
 
-Type: `String`
+Type: `string`
 
 Tie the source to a specific OS.
 
 #### arch
 
-Type: `String`
+Type: `string`
 
 Tie the source to a specific arch.
 
@@ -83,7 +82,7 @@ Tie the source to a specific arch.
 
 #### dest
 
-Type: `String`
+Type: `string`
 
 Accepts a path which the files will be downloaded to.
 
@@ -91,7 +90,7 @@ Accepts a path which the files will be downloaded to.
 
 #### bin
 
-Type: `String`
+Type: `string`
 
 Define which file to use as the binary.
 
@@ -103,7 +102,7 @@ Returns the full path to your binary.
 
 #### range
 
-Type: `String`
+Type: `string`
 
 Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
 the binary against.
@@ -115,7 +114,7 @@ using the URL provided in `.src()`.
 
 #### cmd
 
-Type: `Array`  
+Type: `array`  
 Default: `['--version']`
 
 Command to run the binary with. If it exits with code `0` it means that the 
@@ -123,9 +122,10 @@ binary is working.
 
 #### cb(err)
 
-Type: `Function`
+Type: `function`
 
 Returns nothing but a possible error.
+
 
 ## License
 
