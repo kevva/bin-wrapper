@@ -1,12 +1,12 @@
 'use strict';
 
-var BinWrapper = require('../');
 var fs = require('fs');
-var nock = require('nock');
 var path = require('path');
-var fixture = path.join.bind(path, __dirname, 'fixtures');
-var rm = require('rimraf');
+var BinWrapper = require('../');
+var nock = require('nock');
+var rimraf = require('rimraf');
 var test = require('ava');
+var fixture = path.join.bind(path, __dirname, 'fixtures');
 
 test('expose a constructor', function (t) {
 	t.plan(1);
@@ -24,7 +24,7 @@ test('add a source', function (t) {
 	var bin = new BinWrapper()
 		.src('http://foo.com/bar.tar.gz');
 
-	t.assert(bin._src[0].url === 'http://foo.com/bar.tar.gz');
+	t.assert(bin._src[0].url === 'http://foo.com/bar.tar.gz', bin._src[0].url);
 });
 
 test('add a source to a specific os', function (t) {
@@ -33,7 +33,7 @@ test('add a source to a specific os', function (t) {
 	var bin = new BinWrapper()
 		.src('http://foo.com', process.platform);
 
-	t.assert(bin._src[0].os === process.platform);
+	t.assert(bin._src[0].os === process.platform, bin._src[0].os);
 });
 
 test('set destination directory', function (t) {
@@ -42,7 +42,7 @@ test('set destination directory', function (t) {
 	var bin = new BinWrapper()
 		.dest(path.join(__dirname, 'foo'));
 
-	t.assert(bin._dest === path.join(__dirname, 'foo'));
+	t.assert(bin._dest === path.join(__dirname, 'foo'), bin._dest);
 });
 
 test('set which file to use as the binary', function (t) {
@@ -51,7 +51,7 @@ test('set which file to use as the binary', function (t) {
 	var bin = new BinWrapper()
 		.use('foo');
 
-	t.assert(bin._use === 'foo');
+	t.assert(bin._use === 'foo', bin._use);
 });
 
 test('set a version range to test against', function (t) {
@@ -60,7 +60,7 @@ test('set a version range to test against', function (t) {
 	var bin = new BinWrapper()
 		.version('1.0.0');
 
-	t.assert(bin._version === '1.0.0');
+	t.assert(bin._version === '1.0.0', bin._version);
 });
 
 test('get the binary path', function (t) {
@@ -70,7 +70,7 @@ test('get the binary path', function (t) {
 		.dest('tmp')
 		.use('foo');
 
-	t.assert(bin.path() === 'tmp/foo');
+	t.assert(bin.path() === 'tmp/foo', bin.path());
 });
 
 test('verify that a binary is working', function (t) {
@@ -90,7 +90,7 @@ test('verify that a binary is working', function (t) {
 		t.assert(fs.existsSync(bin.path()));
 		t.assert(scope.isDone());
 
-		rm(bin.dest(), function (err) {
+		rimraf(bin.dest(), function (err) {
 			t.assert(!err, err);
 		});
 	});
@@ -114,7 +114,7 @@ test('meet the desired version', function (t) {
 		t.assert(fs.existsSync(bin.path()));
 		t.assert(scope.isDone());
 
-		rm(bin.dest(), function (err) {
+		rimraf(bin.dest(), function (err) {
 			t.assert(!err, err);
 		});
 	});
@@ -144,11 +144,11 @@ test('download files even if they are not used', function (t) {
 		t.assert(!err, err);
 		t.assert(scope.isDone());
 		t.assert(files.length === 3);
-		t.assert(files[0] === 'gifsicle');
-		t.assert(files[1] === 'gifsicle.exe');
-		t.assert(files[2] === 'test.js');
+		t.assert(files[0] === 'gifsicle', files[0]);
+		t.assert(files[1] === 'gifsicle.exe', files[1]);
+		t.assert(files[2] === 'test.js', files[2]);
 
-		rm(bin.dest(), function (err) {
+		rimraf(bin.dest(), function (err) {
 			t.assert(!err, err);
 		});
 	});
@@ -171,7 +171,7 @@ test('skip running binary check', function (t) {
 		t.assert(fs.existsSync(bin.path()));
 		t.assert(scope.isDone());
 
-		rm(bin.dest(), function (err) {
+		rimraf(bin.dest(), function (err) {
 			t.assert(!err, err);
 		});
 	});
@@ -185,7 +185,7 @@ test('error if no binary is found and no source is provided', function (t) {
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	bin.run(function (err) {
-		t.assert(err);
-		t.assert(err.message === 'No binary found matching your system. It\'s probably not supported.');
+		t.assert(err, err);
+		t.assert(err.message === 'No binary found matching your system. It\'s probably not supported.', err.message);
 	});
 });

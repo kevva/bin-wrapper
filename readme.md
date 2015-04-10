@@ -54,7 +54,7 @@ Whether to skip the binary check or not.
 Type: `number`  
 Default: `1`
 
-Strip a number of leading paths from file names on extraction. 
+Strip a number of leading paths from file names on extraction.
 
 ### .src(url, [os], [arch])
 
@@ -107,7 +107,7 @@ Type: `string`
 Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
 the binary against.
 
-### .run([cmd], cb)
+### .run([cmd], callback)
 
 Runs the search for the binary. If no binary is found it will download the file 
 using the URL provided in `.src()`.
@@ -120,7 +120,7 @@ Default: `['--version']`
 Command to run the binary with. If it exits with code `0` it means that the 
 binary is working.
 
-#### cb(err)
+#### callback(err)
 
 Type: `function`
 
