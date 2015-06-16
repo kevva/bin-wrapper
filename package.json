@@ -25,7 +25,7 @@
     "wrapper"
   ],
   "dependencies": {
-    "bin-check": "^1.0.0",
+    "bin-check": "^2.0.0",
     "bin-version-check": "^2.1.0",
     "download": "^4.0.0",
     "each-async": "^1.1.1",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "ava": "^0.0.4",
-    "nock": "^0.52.4",
+    "nock": "^2.6.0",
     "rimraf": "^2.2.8"
   }
 }
