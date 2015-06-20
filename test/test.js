@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var BinWrapper = require('../');
 var nock = require('nock');
+var pathExists = require('path-exists');
 var rimraf = require('rimraf');
 var test = require('ava');
 var fixture = path.join.bind(path, __dirname, 'fixtures');
@@ -87,7 +88,7 @@ test('verify that a binary is working', function (t) {
 
 	bin.run(function (err) {
 		t.assert(!err, err);
-		t.assert(fs.existsSync(bin.path()));
+		t.assert(pathExists.sync(bin.path()));
 		t.assert(scope.isDone());
 
 		rimraf(bin.dest(), function (err) {
@@ -111,7 +112,7 @@ test('meet the desired version', function (t) {
 
 	bin.run(function (err) {
 		t.assert(!err, err);
-		t.assert(fs.existsSync(bin.path()));
+		t.assert(pathExists.sync(bin.path()));
 		t.assert(scope.isDone());
 
 		rimraf(bin.dest(), function (err) {
@@ -168,7 +169,7 @@ test('skip running binary check', function (t) {
 
 	bin.run(['--shouldNotFailAnyway'], function (err) {
 		t.assert(!err, err);
-		t.assert(fs.existsSync(bin.path()));
+		t.assert(pathExists.sync(bin.path()));
 		t.assert(scope.isDone());
 
 		rimraf(bin.dest(), function (err) {
