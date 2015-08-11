@@ -1,12 +1,11 @@
 'use strict';
-
 var fs = require('fs');
 var path = require('path');
-var BinWrapper = require('../');
 var nock = require('nock');
 var pathExists = require('path-exists');
 var rimraf = require('rimraf');
 var test = require('ava');
+var BinWrapper = require('../');
 var fixture = path.join.bind(path, __dirname, 'fixtures');
 
 test('expose a constructor', function (t) {
