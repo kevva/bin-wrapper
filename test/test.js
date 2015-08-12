@@ -13,11 +13,6 @@ test('expose a constructor', function (t) {
 	t.assert(typeof BinWrapper === 'function');
 });
 
-test('return an instance if it called without `new`', function (t) {
-	t.plan(1);
-	t.assert(BinWrapper() instanceof BinWrapper);
-});
-
 test('add a source', function (t) {
 	t.plan(1);
 

@@ -20,7 +20,12 @@ function BinWrapper(opts) {
 	}
 
 	this.opts = opts || {};
-	this.opts.strip = this.opts.strip <= 0 ? 0 : !this.opts.strip ? 1 : this.opts.strip;
+
+	if (this.opts.strip <= 0 || !this.opts.strip) {
+		this.opts.strip = 0;
+	} else if (!this.opts.strip) {
+		this.opts.strip = 1;
+	}
 }
 
 module.exports = BinWrapper;
@@ -157,7 +162,8 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
 		}
 
 		if (this.version()) {
-			return binVersionCheck()(this.path(), this.version(), cb);
+			binVersionCheck()(this.path(), this.version(), cb);
+			return;
 		}
 
 		cb();
