@@ -21,7 +21,7 @@ function BinWrapper(opts) {
 
 	this.opts = opts || {};
 
-	if (this.opts.strip <= 0 || !this.opts.strip) {
+	if (this.opts.strip <= 0) {
 		this.opts.strip = 0;
 	} else if (!this.opts.strip) {
 		this.opts.strip = 1;
