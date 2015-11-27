@@ -162,7 +162,8 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
 		}
 
 		if (this.version()) {
-			binVersionCheck()(this.path(), this.version(), cb);
+			var escapedPath = this.path().replace(/ /g, '\\ ');
+			binVersionCheck()(escapedPath, this.version(), cb);
 			return;
 		}
 
