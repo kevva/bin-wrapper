@@ -1,4 +1,4 @@
-# bin-wrapper [![Build Status](http://img.shields.io/travis/kevva/bin-wrapper.svg?style=flat)](https://travis-ci.org/kevva/bin-wrapper)
+# bin-wrapper [![Build Status](https://travis-ci.org/kevva/bin-wrapper.svg?branch=master)](https://travis-ci.org/kevva/bin-wrapper)
 
 > Binary wrapper that makes your programs seamlessly available as local dependencies
 
