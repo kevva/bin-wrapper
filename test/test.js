@@ -65,7 +65,7 @@ test('get the binary path', function (t) {
 		.dest('tmp')
 		.use('foo');
 
-	t.assert(bin.path() === 'tmp/foo', bin.path());
+	t.assert(bin.path() === path.join('tmp', 'foo'), bin.path());
 });
 
 test('verify that a binary is working', function (t) {
