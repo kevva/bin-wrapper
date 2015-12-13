@@ -104,12 +104,20 @@ Returns the full path to your binary.
 
 Type: `string`
 
-Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
+Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check
 the binary against.
+
+### .addDecompressPlugin(plugin)
+
+#### plugin
+
+Type: `function`, `array`
+
+Add a [decompress](https://github.com/kevva/decompress) plugin.
 
 ### .run([cmd], callback)
 
-Runs the search for the binary. If no binary is found it will download the file 
+Runs the search for the binary. If no binary is found it will download the file
 using the URL provided in `.src()`.
 
 #### cmd
@@ -117,7 +125,7 @@ using the URL provided in `.src()`.
 Type: `array`  
 Default: `['--version']`
 
-Command to run the binary with. If it exits with code `0` it means that the 
+Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
 
 #### callback(err)

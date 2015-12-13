@@ -20,6 +20,7 @@ function BinWrapper(opts) {
 	}
 
 	this.opts = opts || {};
+	this.decompressPlugins = [];
 
 	if (this.opts.strip <= 0) {
 		this.opts.strip = 0;
@@ -141,6 +142,11 @@ BinWrapper.prototype.run = function (cmd, cb) {
 	}.bind(this));
 };
 
+BinWrapper.prototype.addDecompressPlugin = function (plugin) {
+	this.decompressPlugins = this.decompressPlugins.concat(plugin);
+	return this;
+};
+
 /**
  * Run binary check
  *
@@ -206,6 +212,10 @@ BinWrapper.prototype.download = function (cb) {
 		extract: true,
 		mode: '755',
 		strip: this.opts.strip
+	});
+
+	this.decompressPlugins.forEach(function (plugin) {
+		download.addDecompresPlugin(plugin);
 	});
 
 	if (!files.length) {

@@ -27,7 +27,7 @@
   "dependencies": {
     "bin-check": "^2.0.0",
     "bin-version-check": "^2.1.0",
-    "download": "^4.0.0",
+    "download": "mastilver/download#handle-decompress-plugin",
     "each-async": "^1.1.1",
     "lazy-req": "^1.0.0",
     "os-filter-obj": "^1.0.0"
@@ -36,6 +36,7 @@
     "ava": "^0.0.4",
     "nock": "^2.6.0",
     "path-exists": "^1.0.0",
+    "readable-stream": "^2.0.4",
     "rimraf": "^2.2.8",
     "xo": "*"
   }
