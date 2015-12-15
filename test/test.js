@@ -4,6 +4,7 @@ var path = require('path');
 var nock = require('nock');
 var pathExists = require('path-exists');
 var rimraf = require('rimraf');
+var download = require('download');
 var test = require('ava');
 var BinWrapper = require('../');
 var fixture = path.join.bind(path, __dirname, 'fixtures');
@@ -182,5 +183,31 @@ test('error if no binary is found and no source is provided', function (t) {
 	bin.run(function (err) {
 		t.assert(err, err);
 		t.assert(err.message === 'No binary found matching your system. It\'s probably not supported.', err.message);
+	});
+});
+
+test('expose download', function (t) {
+	t.plan(5);
+
+	var scope = nock('http://foo.com')
+		.get('/gifsicle.tar.gz')
+		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'));
+
+	var bin = new BinWrapper()
+		.src('http://foo.com/gifsicle.tar.gz')
+		.dest(path.join(__dirname, 'expose'))
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
+		.configureDownload(function (d) {
+			t.assert(d instanceof download);
+		});
+
+	bin.run(function (err) {
+		t.assert(!err, err);
+		t.assert(pathExists.sync(bin.path()));
+		t.assert(scope.isDone());
+
+		rimraf(bin.dest(), function (err) {
+			t.assert(!err, err);
+		});
 	});
 });

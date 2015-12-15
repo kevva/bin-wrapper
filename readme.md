@@ -104,12 +104,12 @@ Returns the full path to your binary.
 
 Type: `string`
 
-Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
+Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check
 the binary against.
 
 ### .run([cmd], callback)
 
-Runs the search for the binary. If no binary is found it will download the file 
+Runs the search for the binary. If no binary is found it will download the file
 using the URL provided in `.src()`.
 
 #### cmd
@@ -117,7 +117,7 @@ using the URL provided in `.src()`.
 Type: `array`  
 Default: `['--version']`
 
-Command to run the binary with. If it exits with code `0` it means that the 
+Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
 
 #### callback(err)
@@ -125,6 +125,14 @@ binary is working.
 Type: `function`
 
 Returns nothing but a possible error.
+
+### .configureDownload(configFn)
+
+#### configFn(download)
+
+Type: `function`
+
+The function will be called with the [download](https://github.com/kevva/download) instance used
 
 
 ## License
