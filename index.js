@@ -19,6 +19,7 @@ function BinWrapper(opts) {
 		return new BinWrapper(opts);
 	}
 
+	this.configureDownloadFn = [];
 	this.opts = opts || {};
 
 	if (this.opts.strip <= 0) {
@@ -142,6 +143,18 @@ BinWrapper.prototype.run = function (cmd, cb) {
 };
 
 /**
+ * configureDownload
+ *
+ * @param {Function} fn
+ * @api public
+ */
+
+BinWrapper.prototype.configureDownload = function (fn) {
+	this.configureDownloadFn.push(fn);
+	return this;
+};
+
+/**
  * Run binary check
  *
  * @param {Array} cmd
@@ -206,6 +219,10 @@ BinWrapper.prototype.download = function (cb) {
 		extract: true,
 		mode: '755',
 		strip: this.opts.strip
+	});
+
+	this.configureDownloadFn.forEach(function (fn) {
+		fn(download);
 	});
 
 	if (!files.length) {
