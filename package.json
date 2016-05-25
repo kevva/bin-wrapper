@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "xo && node test/test.js"
+    "test": "xo && ava"
   },
   "files": [
     "index.js"
@@ -33,10 +33,12 @@
     "os-filter-obj": "^1.0.0"
   },
   "devDependencies": {
-    "ava": "^0.0.4",
-    "nock": "^2.6.0",
-    "path-exists": "^1.0.0",
+    "ava": "*",
+    "nock": "^8.0.0",
+    "path-exists": "^3.0.0",
+    "pify": "^2.3.0",
     "rimraf": "^2.2.8",
+    "tempfile": "^1.1.1",
     "xo": "*"
   }
 }
