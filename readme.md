@@ -13,10 +13,10 @@ $ npm install --save bin-wrapper
 ## Usage
 
 ```js
-var BinWrapper = require('bin-wrapper');
+const BinWrapper = require('bin-wrapper');
 
-var base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
-var bin = new BinWrapper()
+const base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
+const bin = new BinWrapper()
 	.src(base + '/osx/gifsicle', 'darwin')
 	.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
 	.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
@@ -24,7 +24,7 @@ var bin = new BinWrapper()
 	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 	.version('>=1.71');
 
-bin.run(['--version'], function (err) {
+bin.run(['--version'], err => {
 	console.log('gifsicle is working');
 });
 ```
@@ -42,16 +42,18 @@ console.log(bin.path()); // => path/to/vendor/gifsicle
 
 Creates a new `BinWrapper` instance.
 
-#### options.skipCheck
+#### options
 
-Type: `boolean`  
+##### skipCheck
+
+Type: `boolean`<br>
 Default: `false`
 
 Whether to skip the binary check or not.
 
-#### options.strip
+##### strip
 
-Type: `number`  
+Type: `number`<br>
 Default: `1`
 
 Strip a number of leading paths from file names on extraction.
@@ -78,17 +80,17 @@ Type: `string`
 
 Tie the source to a specific arch.
 
-### .dest(dest)
+### .dest(destination)
 
-#### dest
+#### destination
 
 Type: `string`
 
 Accepts a path which the files will be downloaded to.
 
-### .use(bin)
+### .use(binary)
 
-#### bin
+#### binary
 
 Type: `string`
 
@@ -104,25 +106,25 @@ Returns the full path to your binary.
 
 Type: `string`
 
-Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check 
+Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check
 the binary against.
 
-### .run([cmd], callback)
+### .run([arguments], callback)
 
-Runs the search for the binary. If no binary is found it will download the file 
+Runs the search for the binary. If no binary is found it will download the file
 using the URL provided in `.src()`.
 
-#### cmd
+#### arguments
 
-Type: `array`  
+Type: `Array`<br>
 Default: `['--version']`
 
-Command to run the binary with. If it exits with code `0` it means that the 
+Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
 
 #### callback(err)
 
-Type: `function`
+Type: `Function`
 
 Returns nothing but a possible error.
 
