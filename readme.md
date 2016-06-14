@@ -17,7 +17,7 @@ const BinWrapper = require('bin-wrapper');
 
 const base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
 const bin = new BinWrapper()
-	.src(base + '/osx/gifsicle', 'darwin')
+	.src(base + '/macos/gifsicle', 'darwin')
 	.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
 	.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
 	.dest(path.join('vendor'))
