@@ -1,6 +1,7 @@
 'use strict';
 var fs = require('fs');
 var path = require('path');
+var which = require('which');
 var lazyReq = require('lazy-req')(require);
 var binCheck = lazyReq('bin-check');
 var binVersionCheck = lazyReq('bin-version-check');
@@ -109,7 +110,11 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-	return path.join(this.dest(), this.use());
+	try {
+		return which.sync(this.use(), { all: true }).pop();
+	} catch (exception) {
+		return path.join(this.dest(), this.use());
+	}
 };
 
 /**

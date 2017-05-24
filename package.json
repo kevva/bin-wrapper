@@ -30,7 +30,8 @@
     "download": "^4.0.0",
     "each-async": "^1.1.1",
     "lazy-req": "^1.0.0",
-    "os-filter-obj": "^1.0.0"
+    "os-filter-obj": "^1.0.0",
+    "which": "^1.2.14"
   },
   "devDependencies": {
     "ava": "*",
