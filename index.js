@@ -1,6 +1,7 @@
 'use strict';
 var fs = require('fs');
 var path = require('path');
+var which = require('which');
 var lazyReq = require('lazy-req')(require);
 var binCheck = lazyReq('bin-check');
 var binVersionCheck = lazyReq('bin-version-check');
@@ -109,7 +110,18 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-	return path.join(this.dest(), this.use());
+	var foundPath = null;
+	try {
+		foundPath = which.sync(this.use(), { all: true })
+			.map(p => fs.realpath(p))
+			.find(p => p != __filename);
+	} catch (exception) {
+		// which can't find a locally installed version, ignore
+	}
+	if (!foundPath) {
+		foundPath = path.join(this.dest(), this.use());
+	}
+	return foundPath;
 };
 
 /**
