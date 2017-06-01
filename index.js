@@ -110,11 +110,18 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
+	var foundPath = null;
 	try {
-		return which.sync(this.use(), { all: true }).pop();
+		foundPath = which.sync(this.use(), { all: true })
+			.map(p => fs.realpath(p))
+			.find(p => p != __filename);
 	} catch (exception) {
-		return path.join(this.dest(), this.use());
+		// which can't find a locally installed version, ignore
 	}
+	if (!foundPath) {
+		foundPath = path.join(this.dest(), this.use());
+	}
+	return foundPath;
 };
 
 /**
