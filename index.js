@@ -113,6 +113,16 @@ BinWrapper.prototype.path = function () {
 };
 
 /**
+ * Get path to the remote binary
+ *
+ * @api public
+ */
+
+BinWrapper.prototype.remote = function () {
+	return osFilterObj()(this.src());
+};
+
+/**
  * Run
  *
  * @param {Array} cmd
