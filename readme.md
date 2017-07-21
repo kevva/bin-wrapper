@@ -131,4 +131,4 @@ Returns nothing but a possible error.
 
 ## License
 
-MIT © [Kevin Mårtensson](http://kevinmartensson.com)
+MIT © [Kevin Mårtensson](https://github.com/kevva)

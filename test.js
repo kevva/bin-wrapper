@@ -1,123 +1,59 @@
-import fs from 'fs';
 import path from 'path';
-import nock from 'nock';
-import pathExists from 'path-exists';
-import pify from 'pify';
-import rimraf from 'rimraf';
 import test from 'ava';
-import tempfile from 'tempfile';
-import Fn from './';
+import Conf from 'conf';
+import nock from 'nock';
+import m from '.';
 
-const fsP = pify(fs);
-const rimrafP = pify(rimraf);
+const config = new Conf();
+const gifsicle = process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle';
 const fixture = path.join.bind(path, __dirname, 'fixtures');
 
+const gifsicleFail = {
+	darwin: 'gifsicle',
+	linux: 'gifsicle.exe',
+	win32: 'gifsicle'
+}[process.platform];
+
+const urlFail = {
+	darwin: 'gifsicle-linux.tar.gz',
+	linux: 'gifsicle-win32.tar.gz',
+	win32: 'gifsicle-darwin.tar.gz'
+}[process.platform];
+
 test.beforeEach(() => {
+	config.clear();
+
 	nock('http://foo.com')
-		.get('/gifsicle.tar.gz')
-		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'))
-		.get('/gifsicle-darwin.tar.gz')
-		.replyWithFile(200, fixture('gifsicle-darwin.tar.gz'))
-		.get('/gifsicle-win32.tar.gz')
-		.replyWithFile(200, fixture('gifsicle-win32.tar.gz'))
-		.get('/test.js')
-		.replyWithFile(200, __filename);
+		.get('/gifsicle')
+		.replyWithFile(200, fixture(`gifsicle-${process.platform}.tar.gz`))
+		.get('/gifsicle-wrong')
+		.replyWithFile(200, fixture(urlFail));
 });
 
-test('expose a constructor', t => {
-	t.is(typeof Fn, 'function');
+test('find globally installed binary', async t => {
+	await t.notThrows(m('bash'));
+	t.truthy(m.path('bash'));
 });
 
-test('add a source', t => {
-	const bin = new Fn().src('http://foo.com/bar.tar.gz');
-	t.is(bin._src[0].url, 'http://foo.com/bar.tar.gz');
+test('download and extract binary', async t => {
+	await t.notThrows(m(gifsicle, {url: 'http://foo.com/gifsicle'}));
+	t.truthy(m.path(gifsicle));
 });
 
-test('add a source to a specific os', t => {
-	const bin = new Fn().src('http://foo.com', process.platform);
-	t.is(bin._src[0].os, process.platform);
+test('check if binary satisfies the desired version', async t => {
+	await t.notThrows(m(gifsicle, {
+		url: 'http://foo.com/gifsicle',
+		version: '>=1.71'
+	}));
+
+	t.truthy(m.path(gifsicle));
 });
 
-test('set destination directory', t => {
-	const bin = new Fn().dest(path.join(__dirname, 'foo'));
-	t.is(bin._dest, path.join(__dirname, 'foo'));
-});
+test('skip tests', async t => {
+	await t.notThrows(m(gifsicleFail, {
+		runTest: false,
+		url: 'http://foo.com/gifsicle-wrong'
+	}));
 
-test('set which file to use as the binary', t => {
-	const bin = new Fn().use('foo');
-	t.is(bin._use, 'foo');
-});
-
-test('set a version range to test against', t => {
-	const bin = new Fn().version('1.0.0');
-	t.is(bin._version, '1.0.0');
-});
-
-test('get the binary path', t => {
-	const bin = new Fn()
-		.dest('tmp')
-		.use('foo');
-
-	t.is(bin.path(), path.join('tmp', 'foo'));
-});
-
-test('verify that a binary is working', async t => {
-	const bin = new Fn()
-		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	await pify(bin.run.bind(bin))();
-	t.true(await pathExists(bin.path()));
-	await rimrafP(bin.dest());
-});
-
-test('meet the desired version', async t => {
-	const bin = new Fn()
-		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
-		.version('>=1.71');
-
-	await pify(bin.run.bind(bin))();
-	t.true(await pathExists(bin.path()));
-	await rimrafP(bin.dest());
-});
-
-test('download files even if they are not used', async t => {
-	const bin = new Fn({strip: 0, skipCheck: true})
-		.src('http://foo.com/gifsicle-darwin.tar.gz')
-		.src('http://foo.com/gifsicle-win32.tar.gz')
-		.src('http://foo.com/test.js')
-		.dest(tempfile())
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	await pify(bin.run.bind(bin))();
-	const files = await fsP.readdirSync(bin.dest());
-
-	t.is(files.length, 3);
-	t.is(files[0], 'gifsicle');
-	t.is(files[1], 'gifsicle.exe');
-	t.is(files[2], 'test.js');
-
-	await rimrafP(bin.dest());
-});
-
-test('skip running binary check', async t => {
-	const bin = new Fn({skipCheck: true})
-		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	await pify(bin.run.bind(bin))(['--shouldNotFailAnyway']);
-	t.true(await pathExists(bin.path()));
-	await rimrafP(bin.dest());
-});
-
-test('error if no binary is found and no source is provided', t => {
-	const bin = new Fn()
-		.dest(tempfile())
-		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
+	t.truthy(m.path(gifsicleFail));
 });

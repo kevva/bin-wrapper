@@ -1,223 +1,112 @@
 'use strict';
-var fs = require('fs');
-var path = require('path');
-var lazyReq = require('lazy-req')(require);
-var binCheck = lazyReq('bin-check');
-var binVersionCheck = lazyReq('bin-version-check');
-var Download = lazyReq('download');
-var osFilterObj = lazyReq('os-filter-obj');
+const path = require('path');
+const binCheck = require('bin-check');
+const binVersionCheck = require('bin-version-check');
+const chalk = require('chalk');
+const Conf = require('conf');
+const download = require('download');
+const Listr = require('listr');
+const pIf = require('p-if');
+const tempfile = require('tempfile');
+const whichExcludeNpm = require('which-exclude-npm');
 
-/**
- * Initialize a new `BinWrapper`
- *
- * @param {Object} opts
- * @api public
- */
+const config = new Conf();
 
-function BinWrapper(opts) {
-	if (!(this instanceof BinWrapper)) {
-		return new BinWrapper(opts);
-	}
-
-	this.opts = opts || {};
-
-	if (this.opts.strip <= 0) {
-		this.opts.strip = 0;
-	} else if (!this.opts.strip) {
-		this.opts.strip = 1;
-	}
-}
-
-module.exports = BinWrapper;
-
-/**
- * Get or set files to download
- *
- * @param {String} src
- * @param {String} os
- * @param {String} arch
- * @api public
- */
-
-BinWrapper.prototype.src = function (src, os, arch) {
-	if (!arguments.length) {
-		return this._src;
-	}
-
-	this._src = this._src || [];
-	this._src.push({
-		url: src,
-		os: os,
-		arch: arch
+const findExisting = bin => (ctx, task) => Promise.resolve(config.get(bin))
+	.then(pIf(Boolean, res => res, () => whichExcludeNpm(bin)))
+	.then(file => {
+		task.title = `Found existing binary at ${file}`;
+		ctx.path = file;
 	});
 
-	return this;
-};
-
-/**
- * Get or set the destination
- *
- * @param {String} dest
- * @api public
- */
-
-BinWrapper.prototype.dest = function (dest) {
-	if (!arguments.length) {
-		return this._dest;
-	}
-
-	this._dest = dest;
-	return this;
-};
-
-/**
- * Get or set the binary
- *
- * @param {String} bin
- * @api public
- */
-
-BinWrapper.prototype.use = function (bin) {
-	if (!arguments.length) {
-		return this._use;
-	}
-
-	this._use = bin;
-	return this;
-};
-
-/**
- * Get or set a semver range to test the binary against
- *
- * @param {String} range
- * @api public
- */
-
-BinWrapper.prototype.version = function (range) {
-	if (!arguments.length) {
-		return this._version;
-	}
-
-	this._version = range;
-	return this;
-};
-
-/**
- * Get path to the binary
- *
- * @api public
- */
-
-BinWrapper.prototype.path = function () {
-	return path.join(this.dest(), this.use());
-};
-
-/**
- * Run
- *
- * @param {Array} cmd
- * @param {Function} cb
- * @api public
- */
-
-BinWrapper.prototype.run = function (cmd, cb) {
-	if (typeof cmd === 'function' && !cb) {
-		cb = cmd;
-		cmd = ['--version'];
-	}
-
-	this.findExisting(function (err) {
-		if (err) {
-			cb(err);
-			return;
-		}
-
-		if (this.opts.skipCheck) {
-			cb();
-			return;
-		}
-
-		this.runCheck(cmd, cb);
-	}.bind(this));
-};
-
-/**
- * Run binary check
- *
- * @param {Array} cmd
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype.runCheck = function (cmd, cb) {
-	binCheck()(this.path(), cmd, function (err, works) {
-		if (err) {
-			cb(err);
-			return;
-		}
-
+const testBin = cmd => (ctx, task) => binCheck(ctx.path, cmd)
+	.then(works => {
 		if (!works) {
-			cb(new Error('The `' + this.path() + '` binary doesn\'t seem to work correctly'));
-			return;
+			throw new Error('Binary doesn\'t seem to work');
 		}
 
-		if (this.version()) {
-			binVersionCheck()(this.path(), this.version(), cb);
-			return;
-		}
+		task.title = `${ctx.path} passed the test`;
+	})
+	.catch(err => {
+		ctx.path = null;
+		throw err;
+	});
 
-		cb();
-	}.bind(this));
-};
+const testBinVersion = version => (ctx, task) => binVersionCheck(ctx.path, version)
+	.then(() => {
+		task.title = `${ctx.path} satisfies the desired version`;
+	})
+	.catch(err => {
+		ctx.path = null;
+		throw err;
+	});
 
-/**
- * Find existing files
- *
- * @param {Function} cb
- * @api private
- */
+const downloadBin = (bin, opts) => (ctx, task) => download(opts.url, opts.dest, opts).then(() => {
+	const dest = path.join(opts.dest, bin);
+	task.title = `Files downloaded to ${opts.dest}`;
+	ctx.path = dest;
+});
 
-BinWrapper.prototype.findExisting = function (cb) {
-	fs.stat(this.path(), function (err) {
-		if (err && err.code === 'ENOENT') {
-			this.download(cb);
-			return;
-		}
-
-		if (err) {
-			cb(err);
-			return;
-		}
-
-		cb();
-	}.bind(this));
-};
-
-/**
- * Download files
- *
- * @param {Function} cb
- * @api private
- */
-
-BinWrapper.prototype.download = function (cb) {
-	var files = osFilterObj()(this.src());
-	var download = new Download()({
+module.exports = (bin, opts) => {
+	opts = Object.assign({
 		extract: true,
-		mode: '755',
-		strip: this.opts.strip
+		dest: tempfile(),
+		filename: bin,
+		runTest: true,
+		strip: 1
+	}, opts);
+
+	const tasks = new Listr([{
+		title: `Searching for existing ${bin} binary…`,
+		task: findExisting(bin)
+	}, {
+		title: `Testing existing ${bin} binary…`,
+		enabled: ctx => opts.runTest && ctx.path,
+		task: testBin(opts.testCommand)
+	}, {
+		title: `Checking existing ${bin} version…`,
+		enabled: ctx => opts.version && ctx.path,
+		task: testBinVersion(opts.version)
+	}, {
+		title: `Downloading files…`,
+		enabled: ctx => opts.url && !ctx.path,
+		task: downloadBin(bin, opts)
+	}, {
+		title: `Testing downloaded ${bin} binary…`,
+		enabled: ctx => opts.runTest && ctx.path,
+		task: testBin(opts.testCommand)
+	}, {
+		title: `Checking downloaded ${bin} version…`,
+		enabled: ctx => opts.version && ctx.path,
+		task: testBinVersion(opts.version)
+	}], {
+		exitOnError: false
 	});
 
-	if (!files.length) {
-		cb(new Error('No binary found matching your system. It\'s probably not supported.'));
-		return;
+	return tasks.run()
+		.then(ctx => {
+			config.set(bin, ctx.path);
+		})
+		.catch(err => {
+			if (err.context.path) {
+				config.set(bin, err.context.path);
+				return;
+			}
+
+			throw err;
+		});
+};
+
+module.exports.path = bin => config.get(bin);
+
+module.exports.BinError = class extends Error {
+	constructor(err) {
+		if (err.code === 'ENOENT') {
+			err.message = `${chalk.red(`${err.path} doesn't exist. Try downloading it manually.`)}\n\n${err.message}`;
+		}
+
+		super(err.message);
+
+		this.name = 'BinError';
 	}
-
-	files.forEach(function (file) {
-		download.get(file.url);
-	});
-
-	download
-		.dest(this.dest())
-		.run(cb);
 };
