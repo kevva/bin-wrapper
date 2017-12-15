@@ -6,6 +6,7 @@ var binCheck = lazyReq('bin-check');
 var binVersionCheck = lazyReq('bin-version-check');
 var Download = lazyReq('download');
 var osFilterObj = lazyReq('os-filter-obj');
+var which = require('which');
 
 /**
  * Initialize a new `BinWrapper`
@@ -109,6 +110,12 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
+	var systemBin = which.sync(this.use(), {nothrow: true})
+
+	if (systemBin) {
+		return systemBin;
+	}
+
 	return path.join(this.dest(), this.use());
 };
 
