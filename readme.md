@@ -35,6 +35,7 @@ Get the path to your binary with `bin.path()`:
 console.log(bin.path()); // => path/to/vendor/gifsicle
 ```
 
+> if you have the requested binary installed globally, this one will be used instead (if everything works)
 
 ## API
 
