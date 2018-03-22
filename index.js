@@ -41,7 +41,7 @@ module.exports = BinWrapper;
  */
 
 BinWrapper.prototype.src = function (src, os, arch) {
-	if (!arguments.length === true) {
+	if (arguments.length === 0) {
 		return this._src;
 	}
 
@@ -63,7 +63,7 @@ BinWrapper.prototype.src = function (src, os, arch) {
  */
 
 BinWrapper.prototype.dest = function (dest) {
-	if (!arguments.length === true) {
+	if (arguments.length === 0) {
 		return this._dest;
 	}
 
@@ -79,7 +79,7 @@ BinWrapper.prototype.dest = function (dest) {
  */
 
 BinWrapper.prototype.use = function (bin) {
-	if (!arguments.length === true) {
+	if (arguments.length === 0) {
 		return this._use;
 	}
 
@@ -95,7 +95,7 @@ BinWrapper.prototype.use = function (bin) {
  */
 
 BinWrapper.prototype.version = function (range) {
-	if (!arguments.length === true) {
+	if (arguments.length === 0) {
 		return this._version;
 	}
 
