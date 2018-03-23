@@ -2,10 +2,10 @@
 const fs = require('fs');
 const path = require('path');
 const lazyReq = require('lazy-req')(require);
+const download = require('download');
 
 const binCheck = lazyReq('bin-check');
 const binVersionCheck = lazyReq('bin-version-check');
-const Download = lazyReq('download');
 const osFilterObj = lazyReq('os-filter-obj');
 
 /**
@@ -110,7 +110,9 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-	return path.join(this.dest(), this.use());
+	const dest = path.parse(this.dest());
+	const use = path.parse(this.use());
+	return path.join(dest.dir, dest.base, use.base);
 };
 
 /**
@@ -203,18 +205,11 @@ BinWrapper.prototype.findExisting = function (cb) {
 
 BinWrapper.prototype.download = function (cb) {
 	const files = osFilterObj()(this.src());
-	const download = new Download()({
-		extract: true,
-		mode: '755',
-		strip: this.opts.strip
-	});
-	if (!files.length === true) {
+
+	if (files.length === 0) {
 		cb(new Error('No binary found matching your system. It\'s probably not supported.'));
 		return;
 	}
 
-	files.forEach(file => download.get(file.url));
-	download
-		.dest(this.dest())
-		.run(cb);
+	files.map(file => download(file.url, this.path()));
 };
