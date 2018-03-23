@@ -1,11 +1,12 @@
 'use strict';
-var fs = require('fs');
-var path = require('path');
-var lazyReq = require('lazy-req')(require);
-var binCheck = lazyReq('bin-check');
-var binVersionCheck = lazyReq('bin-version-check');
-var Download = lazyReq('download');
-var osFilterObj = lazyReq('os-filter-obj');
+const fs = require('fs');
+const path = require('path');
+const lazyReq = require('lazy-req')(require);
+const download = require('download');
+
+const binCheck = lazyReq('bin-check');
+const binVersionCheck = lazyReq('bin-version-check');
+const osFilterObj = lazyReq('os-filter-obj');
 
 /**
  * Initialize a new `BinWrapper`
@@ -40,15 +41,15 @@ module.exports = BinWrapper;
  */
 
 BinWrapper.prototype.src = function (src, os, arch) {
-	if (!arguments.length) {
+	if (arguments.length === 0) {
 		return this._src;
 	}
 
 	this._src = this._src || [];
 	this._src.push({
 		url: src,
-		os: os,
-		arch: arch
+		os,
+		arch
 	});
 
 	return this;
@@ -62,7 +63,7 @@ BinWrapper.prototype.src = function (src, os, arch) {
  */
 
 BinWrapper.prototype.dest = function (dest) {
-	if (!arguments.length) {
+	if (arguments.length === 0) {
 		return this._dest;
 	}
 
@@ -78,7 +79,7 @@ BinWrapper.prototype.dest = function (dest) {
  */
 
 BinWrapper.prototype.use = function (bin) {
-	if (!arguments.length) {
+	if (arguments.length === 0) {
 		return this._use;
 	}
 
@@ -94,7 +95,7 @@ BinWrapper.prototype.use = function (bin) {
  */
 
 BinWrapper.prototype.version = function (range) {
-	if (!arguments.length) {
+	if (arguments.length === 0) {
 		return this._version;
 	}
 
@@ -109,7 +110,9 @@ BinWrapper.prototype.version = function (range) {
  */
 
 BinWrapper.prototype.path = function () {
-	return path.join(this.dest(), this.use());
+	const dest = path.parse(this.dest());
+	const use = path.parse(this.use());
+	return path.join(dest.dir, dest.base, use.base);
 };
 
 /**
@@ -126,7 +129,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
 		cmd = ['--version'];
 	}
 
-	this.findExisting(function (err) {
+	this.findExisting(err => {
 		if (err) {
 			cb(err);
 			return;
@@ -138,7 +141,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
 		}
 
 		this.runCheck(cmd, cb);
-	}.bind(this));
+	});
 };
 
 /**
@@ -150,7 +153,7 @@ BinWrapper.prototype.run = function (cmd, cb) {
  */
 
 BinWrapper.prototype.runCheck = function (cmd, cb) {
-	binCheck()(this.path(), cmd, function (err, works) {
+	binCheck()(this.path(), cmd, (err, works) => {
 		if (err) {
 			cb(err);
 			return;
@@ -167,7 +170,7 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
 		}
 
 		cb();
-	}.bind(this));
+	});
 };
 
 /**
@@ -178,7 +181,7 @@ BinWrapper.prototype.runCheck = function (cmd, cb) {
  */
 
 BinWrapper.prototype.findExisting = function (cb) {
-	fs.stat(this.path(), function (err) {
+	fs.stat(this.path(), err => {
 		if (err && err.code === 'ENOENT') {
 			this.download(cb);
 			return;
@@ -190,7 +193,7 @@ BinWrapper.prototype.findExisting = function (cb) {
 		}
 
 		cb();
-	}.bind(this));
+	});
 };
 
 /**
@@ -201,23 +204,12 @@ BinWrapper.prototype.findExisting = function (cb) {
  */
 
 BinWrapper.prototype.download = function (cb) {
-	var files = osFilterObj()(this.src());
-	var download = new Download()({
-		extract: true,
-		mode: '755',
-		strip: this.opts.strip
-	});
+	const files = osFilterObj()(this.src());
 
-	if (!files.length) {
+	if (files.length === 0) {
 		cb(new Error('No binary found matching your system. It\'s probably not supported.'));
 		return;
 	}
 
-	files.forEach(function (file) {
-		download.get(file.url);
-	});
-
-	download
-		.dest(this.dest())
-		.run(cb);
+	files.map(file => download(file.url, this.path()));
 };

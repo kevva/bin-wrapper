@@ -6,7 +6,7 @@ import pify from 'pify';
 import rimraf from 'rimraf';
 import test from 'ava';
 import tempfile from 'tempfile';
-import Fn from './';
+import Fn from '.';
 
 const fsP = pify(fs);
 const rimrafP = pify(rimraf);
@@ -66,7 +66,6 @@ test('verify that a binary is working', async t => {
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(tempfile())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
 	await pify(bin.run.bind(bin))();
 	t.true(await pathExists(bin.path()));
 	await rimrafP(bin.dest());
@@ -94,7 +93,6 @@ test('download files even if they are not used', async t => {
 
 	await pify(bin.run.bind(bin))();
 	const files = await fsP.readdirSync(bin.dest());
-
 	t.is(files.length, 3);
 	t.is(files[0], 'gifsicle');
 	t.is(files[1], 'gifsicle.exe');
@@ -114,10 +112,9 @@ test('skip running binary check', async t => {
 	await rimrafP(bin.dest());
 });
 
-test('error if no binary is found and no source is provided', t => {
+test('error if no binary is found and no source is provided', async t => {
 	const bin = new Fn()
 		.dest(tempfile())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
-
-	t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
 });
