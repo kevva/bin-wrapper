@@ -1,12 +1,12 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const lazyReq = require('lazy-req')(require);
+const importLazy = require('import-lazy')(require);
 
-const binCheck = lazyReq('bin-check');
-const binVersionCheck = lazyReq('bin-version-check');
-const Download = lazyReq('download');
-const osFilterObj = lazyReq('os-filter-obj');
+const binCheck = importLazy('bin-check');
+const binVersionCheck = importLazy('bin-version-check');
+const Download = importLazy('download');
+const osFilterObj = importLazy('os-filter-obj');
 
 /**
  * Initialize a new `BinWrapper`
