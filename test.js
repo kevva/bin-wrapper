@@ -114,10 +114,10 @@ test('skip running binary check', async t => {
 	await rimrafP(bin.dest());
 });
 
-test('error if no binary is found and no source is provided', t => {
+test('error if no binary is found and no source is provided', async t => {
 	const bin = new Fn()
 		.dest(tempfile())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
 });
