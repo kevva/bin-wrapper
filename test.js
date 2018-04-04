@@ -6,7 +6,7 @@ import pify from 'pify';
 import rimraf from 'rimraf';
 import test from 'ava';
 import tempfile from 'tempfile';
-import Fn from './';
+import Fn from '.';
 
 const fsP = pify(fs);
 const rimrafP = pify(rimraf);
