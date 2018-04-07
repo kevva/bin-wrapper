@@ -5,8 +5,8 @@ import pathExists from 'path-exists';
 import pify from 'pify';
 import rimraf from 'rimraf';
 import test from 'ava';
-import tempfile from 'tempfile';
-import Fn from './';
+import tempy from 'tempy';
+import Fn from '.';
 
 const fsP = pify(fs);
 const rimrafP = pify(rimraf);
@@ -64,7 +64,7 @@ test('get the binary path', t => {
 test('verify that a binary is working', async t => {
 	const bin = new Fn()
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
+		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	await pify(bin.run.bind(bin))();
@@ -75,7 +75,7 @@ test('verify that a binary is working', async t => {
 test('meet the desired version', async t => {
 	const bin = new Fn()
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
+		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 		.version('>=1.71');
 
@@ -89,7 +89,7 @@ test('download files even if they are not used', async t => {
 		.src('http://foo.com/gifsicle-darwin.tar.gz')
 		.src('http://foo.com/gifsicle-win32.tar.gz')
 		.src('http://foo.com/test.js')
-		.dest(tempfile())
+		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	await pify(bin.run.bind(bin))();
@@ -106,7 +106,7 @@ test('download files even if they are not used', async t => {
 test('skip running binary check', async t => {
 	const bin = new Fn({skipCheck: true})
 		.src('http://foo.com/gifsicle.tar.gz')
-		.dest(tempfile())
+		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	await pify(bin.run.bind(bin))(['--shouldNotFailAnyway']);
@@ -114,10 +114,10 @@ test('skip running binary check', async t => {
 	await rimrafP(bin.dest());
 });
 
-test('error if no binary is found and no source is provided', t => {
+test('error if no binary is found and no source is provided', async t => {
 	const bin = new Fn()
-		.dest(tempfile())
+		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
 });

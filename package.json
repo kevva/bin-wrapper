@@ -10,7 +10,7 @@
     "url": "https://github.com/kevva"
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=4"
   },
   "scripts": {
     "test": "xo && ava"
@@ -29,16 +29,16 @@
     "bin-version-check": "^2.1.0",
     "download": "^4.0.0",
     "each-async": "^1.1.1",
-    "lazy-req": "^1.0.0",
+    "import-lazy": "^2.1.0",
     "os-filter-obj": "^1.0.0"
   },
   "devDependencies": {
     "ava": "*",
-    "nock": "^8.0.0",
+    "nock": "^9.2.3",
     "path-exists": "^3.0.0",
-    "pify": "^2.3.0",
+    "pify": "^3.0.0",
     "rimraf": "^2.2.8",
-    "tempfile": "^1.1.1",
+    "tempy": "^0.2.1",
     "xo": "*"
   }
 }
