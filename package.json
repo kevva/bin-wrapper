@@ -1,44 +1,43 @@
 {
-  "name": "bin-wrapper",
-  "version": "3.0.2",
-  "description": "Binary wrapper that makes your programs seamlessly available as local dependencies",
-  "license": "MIT",
-  "repository": "kevva/bin-wrapper",
-  "author": {
-    "name": "Kevin Mårtensson",
-    "email": "kevinmartensson@gmail.com",
-    "url": "https://github.com/kevva"
-  },
-  "engines": {
-    "node": ">=4"
-  },
-  "scripts": {
-    "test": "xo && ava"
-  },
-  "files": [
-    "index.js"
-  ],
-  "keywords": [
-    "bin",
-    "check",
-    "local",
-    "wrapper"
-  ],
-  "dependencies": {
-    "bin-check": "^2.0.0",
-    "bin-version-check": "^2.1.0",
-    "download": "^4.0.0",
-    "each-async": "^1.1.1",
-    "import-lazy": "^2.1.0",
-    "os-filter-obj": "^1.0.0"
-  },
-  "devDependencies": {
-    "ava": "*",
-    "nock": "^9.2.3",
-    "path-exists": "^3.0.0",
-    "pify": "^3.0.0",
-    "rimraf": "^2.2.8",
-    "tempy": "^0.2.1",
-    "xo": "*"
-  }
+	"name": "bin-wrapper",
+	"version": "3.0.2",
+	"description": "Binary wrapper that makes your programs seamlessly available as local dependencies",
+	"license": "MIT",
+	"repository": "kevva/bin-wrapper",
+	"author": {
+		"name": "Kevin Mårtensson",
+		"email": "kevinmartensson@gmail.com",
+		"url": "https://github.com/kevva"
+	},
+	"engines": {
+		"node": ">=6"
+	},
+	"scripts": {
+		"test": "xo && ava"
+	},
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"bin",
+		"check",
+		"local",
+		"wrapper"
+	],
+	"dependencies": {
+		"bin-check": "^2.0.0",
+		"bin-version-check": "^2.1.0",
+		"download": "^4.0.0",
+		"import-lazy": "^2.1.0",
+		"os-filter-obj": "^1.0.0"
+	},
+	"devDependencies": {
+		"ava": "*",
+		"nock": "^9.2.3",
+		"path-exists": "^3.0.0",
+		"pify": "^3.0.0",
+		"rimraf": "^2.2.8",
+		"tempy": "^0.2.1",
+		"xo": "*"
+	}
 }

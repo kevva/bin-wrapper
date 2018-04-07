@@ -6,7 +6,7 @@
 ## Install
 
 ```
-$ npm install --save bin-wrapper
+$ npm install bin-wrapper
 ```
 
 
@@ -17,9 +17,9 @@ const BinWrapper = require('bin-wrapper');
 
 const base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
 const bin = new BinWrapper()
-	.src(base + '/macos/gifsicle', 'darwin')
-	.src(base + '/linux/x64/gifsicle', 'linux', 'x64')
-	.src(base + '/win/x64/gifsicle.exe', 'win32', 'x64')
+	.src(`${base}/macos/gifsicle`, 'darwin')
+	.src(`${base}/linux/x64/gifsicle`, 'linux', 'x64')
+	.src(`${base}/win/x64/gifsicle.exe`, 'win32', 'x64')
 	.dest(path.join('vendor'))
 	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 	.version('>=1.71');
@@ -32,13 +32,14 @@ bin.run(['--version'], err => {
 Get the path to your binary with `bin.path()`:
 
 ```js
-console.log(bin.path()); // => path/to/vendor/gifsicle
+console.log(bin.path());
+//=> 'path/to/vendor/gifsicle'
 ```
 
 
 ## API
 
-### new BinWrapper(options)
+### `new BinWrapper(options)`
 
 Creates a new `BinWrapper` instance.
 
