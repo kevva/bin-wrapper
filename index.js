@@ -145,12 +145,12 @@ module.exports = class BinWrapper {
 				}
 
 				if (this.version()) {
-					binVersionCheck(this.path(), this.version(), cb);
-					return;
+					return binVersionCheck(this.path(), this.version());
 				}
 
-				cb();
+				return Promise.resolve();
 			})
+			.then(() => cb())
 			.catch(err => cb(err));
 	}
 
