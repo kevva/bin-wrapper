@@ -1,12 +1,15 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const pify = require('pify');
 const importLazy = require('import-lazy')(require);
 
 const binCheck = importLazy('bin-check');
 const binVersionCheck = importLazy('bin-version-check');
 const download = importLazy('download');
 const osFilterObj = importLazy('os-filter-obj');
+
+const statAsync = pify(fs.stat);
 
 /**
  * Initialize a new `BinWrapper`
@@ -115,30 +118,26 @@ module.exports = class BinWrapper {
 			cmd = ['--version'];
 		}
 
-		this.findExisting(err => {
-			if (err) {
-				cb(err);
-				return;
-			}
+		this.findExisting()
+			.then(() => {
+				if (this.options.skipCheck) {
+					return;
+				}
 
-			if (this.options.skipCheck) {
-				cb();
-				return;
-			}
-
-			this.runCheck(cmd, cb);
-		});
+				return this.runCheck(cmd);
+			})
+			.then(() => cb())
+			.catch(err => cb(err));
 	}
 
 	/**
 	 * Run binary check
 	 *
 	 * @param {Array} cmd
-	 * @param {Function} cb
 	 * @api private
 	 */
-	runCheck(cmd, cb) {
-		binCheck(this.path(), cmd)
+	runCheck(cmd) {
+		return binCheck(this.path(), cmd)
 			.then(works => {
 				if (!works) {
 					throw new Error(`The \`${this.path()}\` binary doesn't seem to work correctly`);
@@ -149,56 +148,44 @@ module.exports = class BinWrapper {
 				}
 
 				return Promise.resolve();
-			})
-			.then(() => cb())
-			.catch(err => cb(err));
+			});
 	}
 
 	/**
 	 * Find existing files
 	 *
-	 * @param {Function} cb
 	 * @api private
 	 */
-	findExisting(cb) {
-		fs.stat(this.path(), err => {
-			if (err && err.code === 'ENOENT') {
-				this.download(cb);
-				return;
-			}
+	findExisting() {
+		return statAsync(this.path())
+			.catch(err => {
+				if (err && err.code === 'ENOENT') {
+					return this.download();
+				}
 
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			cb();
-		});
+				return Promise.reject(err);
+			});
 	}
 
 	/**
 	 * Download files
 	 *
-	 * @param {Function} cb
 	 * @api private
 	 */
-	download(cb) {
+	download() {
 		const files = osFilterObj(this.src() || []);
 		const urls = [];
 
 		if (files.length === 0) {
-			cb(new Error('No binary found matching your system. It\'s probably not supported.'));
-			return;
+			return Promise.reject(new Error('No binary found matching your system. It\'s probably not supported.'));
 		}
 
 		files.forEach(file => urls.push(file.url));
 
-		Promise.all(urls.map(url => download(url, this.dest(), {
+		return Promise.all(urls.map(url => download(url, this.dest(), {
 			extract: true,
 			mode: '755',
 			strip: this.options.strip
-		}))).then(() => {
-			cb();
-		});
+		})));
 	}
 };
