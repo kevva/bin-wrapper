@@ -187,7 +187,7 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	download(cb) {
-		const files = osFilterObj()(this.src());
+		const files = osFilterObj()(this.src() || []);
 		const download = new Download()({
 			extract: true,
 			mode: '755',
