@@ -28,7 +28,6 @@
     "bin-check": "^2.0.0",
     "bin-version-check": "^2.1.0",
     "download": "^4.0.0",
-    "each-async": "^1.1.1",
     "import-lazy": "^2.1.0",
     "os-filter-obj": "^1.0.0"
   },
