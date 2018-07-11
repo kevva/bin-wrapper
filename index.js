@@ -138,24 +138,20 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	runCheck(cmd, cb) {
-		binCheck()(this.path(), cmd, (err, works) => {
-			if (err) {
-				cb(err);
-				return;
-			}
+		binCheck(this.path(), cmd)
+			.then(works => {
+				if (!works) {
+					throw new Error(`The \`${this.path()}\` binary doesn't seem to work correctly`);
+				}
 
-			if (!works) {
-				cb(new Error(`The \`${this.path()}\` binary doesn't seem to work correctly`));
-				return;
-			}
+				if (this.version()) {
+					return binVersionCheck(this.path(), this.version());
+				}
 
-			if (this.version()) {
-				binVersionCheck()(this.path(), this.version(), cb);
-				return;
-			}
-
-			cb();
-		});
+				return Promise.resolve();
+			})
+			.then(() => cb())
+			.catch(err => cb(err));
 	}
 
 	/**
@@ -187,8 +183,8 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	download(cb) {
-		const files = osFilterObj()(this.src());
-		const download = new Download()({
+		const files = osFilterObj(this.src() || []);
+		const download = new Download({
 			extract: true,
 			mode: '755',
 			strip: this.options.strip

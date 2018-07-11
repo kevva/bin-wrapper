@@ -25,11 +25,11 @@
 		"wrapper"
 	],
 	"dependencies": {
-		"bin-check": "^2.0.0",
-		"bin-version-check": "^2.1.0",
+		"bin-check": "^4.1.0",
+		"bin-version-check": "^3.0.0",
 		"download": "^4.0.0",
-		"import-lazy": "^2.1.0",
-		"os-filter-obj": "^1.0.0"
+		"import-lazy": "^3.1.0",
+		"os-filter-obj": "^2.0.0"
 	},
 	"devDependencies": {
 		"ava": "*",
