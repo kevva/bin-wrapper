@@ -5,7 +5,7 @@ const importLazy = require('import-lazy')(require);
 
 const binCheck = importLazy('bin-check');
 const binVersionCheck = importLazy('bin-version-check');
-const Download = importLazy('download');
+const download = importLazy('download');
 const osFilterObj = importLazy('os-filter-obj');
 
 /**
@@ -184,21 +184,21 @@ module.exports = class BinWrapper {
 	 */
 	download(cb) {
 		const files = osFilterObj(this.src() || []);
-		const download = new Download({
-			extract: true,
-			mode: '755',
-			strip: this.options.strip
-		});
+		const urls = [];
 
 		if (files.length === 0) {
 			cb(new Error('No binary found matching your system. It\'s probably not supported.'));
 			return;
 		}
 
-		files.forEach(file => download.get(file.url));
+		files.forEach(file => urls.push(file.url));
 
-		download
-			.dest(this.dest())
-			.run(cb);
+		Promise.all(urls.map(url => download(url, this.dest(), {
+			extract: true,
+			mode: '755',
+			strip: this.options.strip
+		}))).then(() => {
+			cb();
+		});
 	}
 };
