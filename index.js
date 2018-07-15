@@ -109,25 +109,17 @@ module.exports = class BinWrapper {
 	 * Run
 	 *
 	 * @param {Array} cmd
-	 * @param {Function} cb
 	 * @api public
 	 */
-	run(cmd, cb) {
-		if (typeof cmd === 'function' && !cb) {
-			cb = cmd;
-			cmd = ['--version'];
-		}
-
-		this.findExisting()
+	run(cmd = ['--version']) {
+		return this.findExisting()
 			.then(() => {
 				if (this.options.skipCheck) {
 					return;
 				}
 
 				return this.runCheck(cmd);
-			})
-			.then(() => cb())
-			.catch(err => cb(err));
+			});
 	}
 
 	/**

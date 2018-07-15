@@ -24,9 +24,10 @@ const bin = new BinWrapper()
 	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 	.version('>=1.71');
 
-bin.run(['--version'], err => {
-	console.log('gifsicle is working');
-});
+bin.run(['--version'])
+  .then(()) => {
+	  console.log('gifsicle is working');
+  });
 ```
 
 Get the path to your binary with `bin.path()`:
@@ -110,7 +111,7 @@ Type: `string`
 Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check
 the binary against.
 
-### .run([arguments], callback)
+### .run([arguments])
 
 Runs the search for the binary. If no binary is found it will download the file
 using the URL provided in `.src()`.
@@ -122,13 +123,6 @@ Default: `['--version']`
 
 Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
-
-#### callback(err)
-
-Type: `Function`
-
-Returns nothing but a possible error.
-
 
 ## License
 
