@@ -24,10 +24,10 @@ const bin = new BinWrapper()
 	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 	.version('>=1.71');
 
-bin.run(['--version'])
-  .then(()) => {
-	  console.log('gifsicle is working');
-  });
+(async () => {
+	await bin.run(['--version']);
+	console.log('gifsicle is working');
+})();
 ```
 
 Get the path to your binary with `bin.path()`:
@@ -45,6 +45,8 @@ console.log(bin.path());
 Creates a new `BinWrapper` instance.
 
 #### options
+
+Type: `Object`
 
 ##### skipCheck
 
@@ -123,6 +125,7 @@ Default: `['--version']`
 
 Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
+
 
 ## License
 

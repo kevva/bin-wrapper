@@ -112,14 +112,13 @@ module.exports = class BinWrapper {
 	 * @api public
 	 */
 	run(cmd = ['--version']) {
-		return this.findExisting()
-			.then(() => {
-				if (this.options.skipCheck) {
-					return;
-				}
+		return this.findExisting().then(() => {
+			if (this.options.skipCheck) {
+				return;
+			}
 
-				return this.runCheck(cmd);
-			});
+			return this.runCheck(cmd);
+		});
 	}
 
 	/**
@@ -129,18 +128,17 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	runCheck(cmd) {
-		return binCheck(this.path(), cmd)
-			.then(works => {
-				if (!works) {
-					throw new Error(`The \`${this.path()}\` binary doesn't seem to work correctly`);
-				}
+		return binCheck(this.path(), cmd).then(works => {
+			if (!works) {
+				throw new Error(`The \`${this.path()}\` binary doesn't seem to work correctly`);
+			}
 
-				if (this.version()) {
-					return binVersionCheck(this.path(), this.version());
-				}
+			if (this.version()) {
+				return binVersionCheck(this.path(), this.version());
+			}
 
-				return Promise.resolve();
-			});
+			return Promise.resolve();
+		});
 	}
 
 	/**
@@ -149,14 +147,13 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	findExisting() {
-		return statAsync(this.path())
-			.catch(err => {
-				if (err && err.code === 'ENOENT') {
-					return this.download();
-				}
+		return statAsync(this.path()).catch(err => {
+			if (err && err.code === 'ENOENT') {
+				return this.download();
+			}
 
-				return Promise.reject(err);
-			});
+			return Promise.reject(err);
+		});
 	}
 
 	/**
