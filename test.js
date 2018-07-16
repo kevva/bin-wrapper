@@ -67,7 +67,7 @@ test('verify that a binary is working', async t => {
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await pify(bin.run.bind(bin))();
+	await bin.run();
 	t.true(await pathExists(bin.path()));
 	await rimrafP(bin.dest());
 });
@@ -79,7 +79,7 @@ test('meet the desired version', async t => {
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
 		.version('>=1.71');
 
-	await pify(bin.run.bind(bin))();
+	await bin.run();
 	t.true(await pathExists(bin.path()));
 	await rimrafP(bin.dest());
 });
@@ -92,7 +92,7 @@ test('download files even if they are not used', async t => {
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await pify(bin.run.bind(bin))();
+	await bin.run();
 	const files = await fsP.readdirSync(bin.dest());
 
 	t.is(files.length, 3);
@@ -109,7 +109,7 @@ test('skip running binary check', async t => {
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await pify(bin.run.bind(bin))(['--shouldNotFailAnyway']);
+	await bin.run(['--shouldNotFailAnyway']);
 	t.true(await pathExists(bin.path()));
 	await rimrafP(bin.dest());
 });
@@ -119,5 +119,5 @@ test('error if no binary is found and no source is provided', async t => {
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await t.throws(pify(bin.run.bind(bin))(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throws(bin.run(), 'No binary found matching your system. It\'s probably not supported.');
 });
