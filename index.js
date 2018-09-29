@@ -147,12 +147,12 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	findExisting() {
-		return statAsync(this.path()).catch(err => {
-			if (err && err.code === 'ENOENT') {
+		return statAsync(this.path()).catch(error => {
+			if (error && error.code === 'ENOENT') {
 				return this.download();
 			}
 
-			return Promise.reject(err);
+			return Promise.reject(error);
 		});
 	}
 
