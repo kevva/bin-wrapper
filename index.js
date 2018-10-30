@@ -1,6 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 const pify = require('pify');
 const importLazy = require('import-lazy')(require);
 
@@ -10,6 +11,7 @@ const download = importLazy('download');
 const osFilterObj = importLazy('os-filter-obj');
 
 const statAsync = pify(fs.stat);
+const chmodAsync = pify(fs.chmod);
 
 /**
  * Initialize a new `BinWrapper`
@@ -173,8 +175,34 @@ module.exports = class BinWrapper {
 
 		return Promise.all(urls.map(url => download(url, this.dest(), {
 			extract: true,
-			mode: '755',
 			strip: this.options.strip
-		})));
+		}))).then(result => {
+			const resultingFiles = flatten(result.map((item, index) => {
+				if (Array.isArray(item)) {
+					return item.map(file => file.path);
+				}
+
+				const parsedUrl = url.parse(files[index].url);
+				const parsedPath = path.parse(parsedUrl.pathname);
+
+				return parsedPath.base;
+			}));
+
+			return Promise.all(resultingFiles.map(fileName => {
+				return chmodAsync(path.join(this.dest(), fileName), 0o755);
+			}));
+		});
 	}
 };
+
+function flatten(arr) {
+	return arr.reduce((acc, elem) => {
+		if (Array.isArray(elem)) {
+			acc.push(...elem);
+		} else {
+			acc.push(elem);
+		}
+
+		return acc;
+	}, []);
+}

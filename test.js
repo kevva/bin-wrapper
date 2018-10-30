@@ -6,9 +6,9 @@ import pify from 'pify';
 import rimraf from 'rimraf';
 import test from 'ava';
 import tempy from 'tempy';
+import executable from 'executable';
 import Fn from '.';
 
-const fsP = pify(fs);
 const rimrafP = pify(rimraf);
 const fixture = path.join.bind(path, __dirname, 'fixtures');
 
@@ -93,7 +93,7 @@ test('download files even if they are not used', async t => {
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	await bin.run();
-	const files = await fsP.readdirSync(bin.dest());
+	const files = fs.readdirSync(bin.dest());
 
 	t.is(files.length, 3);
 	t.is(files[0], 'gifsicle');
@@ -120,4 +120,21 @@ test('error if no binary is found and no source is provided', async t => {
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
 	await t.throws(bin.run(), 'No binary found matching your system. It\'s probably not supported.');
+});
+
+test('downloaded files are set to be executable', async t => {
+	const bin = new Fn({strip: 0, skipCheck: true})
+		.src('http://foo.com/gifsicle-darwin.tar.gz')
+		.src('http://foo.com/gifsicle-win32.tar.gz')
+		.src('http://foo.com/test.js')
+		.dest(tempy.directory())
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	await bin.run();
+
+	const files = fs.readdirSync(bin.dest());
+
+	files.forEach(fileName => {
+		t.true(executable.sync(path.join(bin.dest(), fileName)));
+	});
 });
