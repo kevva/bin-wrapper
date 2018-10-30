@@ -1,6 +1,6 @@
 {
 	"name": "bin-wrapper",
-	"version": "4.0.0",
+	"version": "4.0.1",
 	"description": "Binary wrapper that makes your programs seamlessly available as local dependencies",
 	"license": "MIT",
 	"repository": "kevva/bin-wrapper",
