@@ -26,16 +26,16 @@
 	],
 	"dependencies": {
 		"bin-check": "^4.1.0",
-		"bin-version-check": "^3.0.0",
+		"bin-version-check": "^4.0.0",
 		"download": "^7.1.0",
 		"import-lazy": "^3.1.0",
 		"os-filter-obj": "^2.0.0",
-		"pify": "^3.0.0"
+		"pify": "^4.0.1"
 	},
 	"devDependencies": {
 		"ava": "*",
 		"executable": "^4.1.1",
-		"nock": "^9.4.2",
+		"nock": "^10.0.2",
 		"path-exists": "^3.0.0",
 		"rimraf": "^2.6.2",
 		"tempy": "^0.2.1",
