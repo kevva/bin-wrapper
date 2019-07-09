@@ -28,6 +28,22 @@ test('expose a constructor', t => {
 	t.is(typeof Fn, 'function');
 });
 
+test('set the base url', t => {
+	const bin = new Fn().baseUrl('http://foo.com/');
+	t.is(bin._baseUrl, 'http://foo.com/');
+});
+
+test('set the base url environment variable override name', t => {
+	const bin = new Fn()
+		.baseUrl('http://foo.com')
+		.baseUrlOverrideEnvName('GIFSICLE_BINARY_MIRROR');
+	t.is(bin._baseUrlOverrideEnvName, 'GIFSICLE_BINARY_MIRROR');
+});
+
+test('can not set the base url env override as base url is not set', t => {
+	t.throws(() => new Fn().baseUrlOverrideEnvName('GIFSICLE_BINARY_MIRROR'));
+});
+
 test('add a source', t => {
 	const bin = new Fn().src('http://foo.com/bar.tar.gz');
 	t.is(bin._src[0].url, 'http://foo.com/bar.tar.gz');
@@ -64,6 +80,45 @@ test('get the binary path', t => {
 test('verify that a binary is working', async t => {
 	const bin = new Fn()
 		.src('http://foo.com/gifsicle.tar.gz')
+		.dest(tempy.directory())
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	await bin.run();
+	t.true(await pathExists(bin.path()));
+	await rimrafP(bin.dest());
+});
+
+test('verify that a binary is working with baseUrl', async t => {
+	const bin = new Fn()
+		.baseUrl('http://foo.com/')
+		.src('gifsicle.tar.gz')
+		.dest(tempy.directory())
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	await bin.run();
+	t.true(await pathExists(bin.path()));
+	await rimrafP(bin.dest());
+});
+
+test('verify that a binary is working with baseUrl environment variable override', async t => {
+	process.env.GIFSICLE_BINARY_MIRROR = 'http://foo.com/';
+	const bin = new Fn()
+		.baseUrl('http://bar.com/')
+		.baseUrlOverrideEnvName('GIFSICLE_BINARY_MIRROR')
+		.src('gifsicle.tar.gz')
+		.dest(tempy.directory())
+		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
+
+	await bin.run();
+	t.true(await pathExists(bin.path()));
+	await rimrafP(bin.dest());
+});
+
+test('verify that a binary is working with baseUrl environment variable override undefined', async t => {
+	const bin = new Fn()
+		.baseUrl('http://foo.com/')
+		.baseUrlOverrideEnvName('GIFSICLE_BINARY_MIRROR')
+		.src('gifsicle.tar.gz')
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
@@ -119,7 +174,7 @@ test('error if no binary is found and no source is provided', async t => {
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await t.throws(bin.run(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throwsAsync(() => bin.run(), 'No binary found matching your system. It\'s probably not supported.');
 });
 
 test('downloaded files are set to be executable', async t => {

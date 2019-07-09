@@ -62,6 +62,57 @@ Default: `1`
 
 Strip a number of leading paths from file names on extraction.
 
+### .baseUrl(baseUrl)
+
+Accepts a base URL that is prepended to everything added as a src using [.src](#.src(url, [os], [arch])).
+
+#### baseUrl
+
+Type: `string`
+
+Accepts a URL pointing to use as the base URL.
+
+#### Usage
+
+```js
+const BinWrapper = require('bin-wrapper');
+
+const bin = new BinWrapper()
+	.baseUrl('https://github.com/imagemin/gifsicle-bin/raw/master/vendor')
+	.src(`/linux/x64/gifsicle`, 'linux', 'x64')
+	.dest(path.join('vendor'))
+	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
+```
+
+### .baseUrlOverrideEnvName(envName)
+
+ Accepts an enviroment variable name to look for. When set the value of this enviroment varibale overrides the value set using [.baseUrl](#.baseUrl(baseUrl)).
+
+#### envName
+
+Type: `string`
+
+Accepts a enviroment variable name.
+
+#### Usage
+
+The below will download the binary from `http://example.com/private/mirror/linux/x64/gifsicle`
+
+```sh
+export GIFSICLE_BIN__MIRROR="http://example.com/private/mirror
+```
+
+```js
+const BinWrapper = require('bin-wrapper');
+
+const bin = new BinWrapper()
+	.baseUrl('https://github.com/imagemin/gifsicle-bin/raw/master/vendor')
+	.baseUrlOverrideEnvName('GIFSICLE_BIN__MIRROR')
+	.src(`/linux/x64/gifsicle`, 'linux', 'x64')
+	.dest(path.join('vendor'))
+	.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
+```
+
 ### .src(url, [os], [arch])
 
 Adds a source to download.
