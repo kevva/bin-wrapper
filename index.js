@@ -174,8 +174,6 @@ module.exports = class BinWrapper {
 			if (this.version()) {
 				return binVersionCheck(this.path(), this.version());
 			}
-
-			return Promise.resolve();
 		});
 	}
 
@@ -221,6 +219,7 @@ module.exports = class BinWrapper {
 					return item.map(file => file.path);
 				}
 
+				// eslint-disable-next-line node/no-deprecated-api
 				const parsedUrl = url.parse(files[index].url);
 				const parsedPath = path.parse(parsedUrl.pathname);
 
