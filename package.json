@@ -13,7 +13,8 @@
 		"node": ">=6"
 	},
 	"scripts": {
-		"test": "xo && ava"
+		"test": "xo && ava",
+		"ba": "node --version"
 	},
 	"files": [
 		"index.js"
@@ -33,7 +34,7 @@
 		"pify": "^4.0.1"
 	},
 	"devDependencies": {
-		"ava": "*",
+		"ava": "1.4.1",
 		"executable": "^4.1.1",
 		"nock": "^10.0.2",
 		"path-exists": "^3.0.0",
