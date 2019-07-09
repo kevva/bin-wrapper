@@ -31,6 +31,42 @@ module.exports = class BinWrapper {
 	}
 
 	/**
+	 * Set base URL
+	 *
+	 * @param {String} url
+	 * @api public
+	 */
+	baseUrl(url) {
+		if (arguments.length === 0) {
+			return this._baseUrl;
+		}
+
+		this._baseUrl = url;
+
+		return this;
+	}
+
+	/**
+	 * Set the env var that overrides baseUrl
+	 *
+	 * @param {String} envName
+	 * @api public
+	 */
+	baseUrlOverrideEnvName(envName) {
+		if (arguments.length === 0) {
+			return this._baseUrlOverrideEnvName;
+		}
+
+		if (!this._baseUrl) {
+			throw new Error('Need to configure baseUrl before configuring overriding it.');
+		}
+
+		this._baseUrlOverrideEnvName = envName;
+
+		return this;
+	}
+
+	/**
 	 * Get or set files to download
 	 *
 	 * @param {String} src
@@ -171,7 +207,10 @@ module.exports = class BinWrapper {
 			return Promise.reject(new Error('No binary found matching your system. It\'s probably not supported.'));
 		}
 
-		files.forEach(file => urls.push(file.url));
+		const baseUrl = this.buildDownloadBaseUrl();
+		files.forEach(file => {
+			urls.push(baseUrl + file.url);
+		});
 
 		return Promise.all(urls.map(url => download(url, this.dest(), {
 			extract: true,
@@ -192,6 +231,23 @@ module.exports = class BinWrapper {
 				return chmodAsync(path.join(this.dest(), fileName), 0o755);
 			}));
 		});
+	}
+
+	/**
+	 * Get the base url we fetch binaries from
+	 *
+	 * @api private
+	 */
+	buildDownloadBaseUrl() {
+		if (!this._baseUrl) {
+			return '';
+		}
+
+		if (this._baseUrlOverrideEnvName && process.env[this._baseUrlOverrideEnvName]) {
+			return process.env[this._baseUrlOverrideEnvName];
+		}
+
+		return this._baseUrl;
 	}
 };
 
