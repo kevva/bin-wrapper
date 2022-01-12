@@ -13,7 +13,8 @@ npm install bin-wrapper
 ## Usage
 
 ```js
-const BinWrapper = require('bin-wrapper');
+import path from 'node:path';
+import BinWrapper from 'bin-wrapper';
 
 const base = 'https://github.com/imagemin/gifsicle-bin/raw/main/vendor';
 const bin = new BinWrapper()
