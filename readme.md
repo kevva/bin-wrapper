@@ -1,12 +1,12 @@
-# bin-wrapper [![Build Status](https://travis-ci.org/kevva/bin-wrapper.svg?branch=master)](https://travis-ci.org/kevva/bin-wrapper)
+# bin-wrapper [![CI](https://github.com/kevva/bin-wrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/kevva/bin-wrapper/actions/workflows/ci.yml)
 
 > Binary wrapper that makes your programs seamlessly available as local dependencies
 
 
 ## Install
 
-```
-$ npm install bin-wrapper
+```sh
+npm install bin-wrapper
 ```
 
 
@@ -15,7 +15,7 @@ $ npm install bin-wrapper
 ```js
 const BinWrapper = require('bin-wrapper');
 
-const base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
+const base = 'https://github.com/imagemin/gifsicle-bin/raw/main/vendor';
 const bin = new BinWrapper()
 	.src(`${base}/macos/gifsicle`, 'darwin')
 	.src(`${base}/linux/x64/gifsicle`, 'linux', 'x64')
@@ -50,15 +50,15 @@ Type: `Object`
 
 ##### skipCheck
 
-Type: `boolean`<br>
-Default: `false`
+* Type: `boolean`
+* Default: `false`
 
 Whether to skip the binary check or not.
 
 ##### strip
 
-Type: `number`<br>
-Default: `1`
+* Type: `number`
+* Default: `1`
 
 Strip a number of leading paths from file names on extraction.
 
@@ -110,7 +110,7 @@ Returns the full path to your binary.
 
 Type: `string`
 
-Define a [semver range](https://github.com/isaacs/node-semver#ranges) to check
+Define a [semver range](https://github.com/npm/node-semver#ranges) to check
 the binary against.
 
 ### .run([arguments])
@@ -120,8 +120,8 @@ using the URL provided in `.src()`.
 
 #### arguments
 
-Type: `Array`<br>
-Default: `['--version']`
+* Type: `Array`
+* Default: `['--version']`
 
 Command to run the binary with. If it exits with code `0` it means that the
 binary is working.
