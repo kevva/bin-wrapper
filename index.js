@@ -1,17 +1,9 @@
-'use strict';
-const fs = require('fs');
-const path = require('path');
-const url = require('url');
-const pify = require('pify');
-const importLazy = require('import-lazy')(require);
-
-const binCheck = importLazy('bin-check');
-const binVersionCheck = importLazy('bin-version-check');
-const download = importLazy('download');
-const osFilterObj = importLazy('os-filter-obj');
-
-const statAsync = pify(fs.stat);
-const chmodAsync = pify(fs.chmod);
+import {promises as fs} from 'node:fs';
+import path from 'node:path';
+import binCheck from 'bin-check';
+import binVersionCheck from 'bin-version-check';
+import download from 'download';
+import osFilterObject from 'os-filter-obj';
 
 /**
  * Initialize a new `BinWrapper`
@@ -19,7 +11,7 @@ const chmodAsync = pify(fs.chmod);
  * @param {Object} options
  * @api public
  */
-module.exports = class BinWrapper {
+export default class BinWrapper {
 	constructor(options = {}) {
 		this.options = options;
 
@@ -47,7 +39,7 @@ module.exports = class BinWrapper {
 		this._src.push({
 			url: src,
 			os,
-			arch
+			arch,
 		});
 
 		return this;
@@ -138,8 +130,6 @@ module.exports = class BinWrapper {
 			if (this.version()) {
 				return binVersionCheck(this.path(), this.version());
 			}
-
-			return Promise.resolve();
 		});
 	}
 
@@ -149,12 +139,12 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	findExisting() {
-		return statAsync(this.path()).catch(error => {
+		return fs.stat(this.path()).catch(error => {
 			if (error && error.code === 'ENOENT') {
 				return this.download();
 			}
 
-			return Promise.reject(error);
+			throw error;
 		});
 	}
 
@@ -164,45 +154,33 @@ module.exports = class BinWrapper {
 	 * @api private
 	 */
 	download() {
-		const files = osFilterObj(this.src() || []);
-		const urls = [];
+		const files = osFilterObject(this.src() || []);
 
 		if (files.length === 0) {
 			return Promise.reject(new Error('No binary found matching your system. It\'s probably not supported.'));
 		}
 
-		files.forEach(file => urls.push(file.url));
+		const urls = [];
+		for (const file of files) {
+			urls.push(file.url);
+		}
 
 		return Promise.all(urls.map(url => download(url, this.dest(), {
 			extract: true,
-			strip: this.options.strip
+			strip: this.options.strip,
 		}))).then(result => {
-			const resultingFiles = flatten(result.map((item, index) => {
+			const resultingFiles = result.flatMap((item, index) => {
 				if (Array.isArray(item)) {
 					return item.map(file => file.path);
 				}
 
-				const parsedUrl = url.parse(files[index].url);
+				const parsedUrl = new URL(files[index].url);
 				const parsedPath = path.parse(parsedUrl.pathname);
 
 				return parsedPath.base;
-			}));
+			});
 
-			return Promise.all(resultingFiles.map(fileName => {
-				return chmodAsync(path.join(this.dest(), fileName), 0o755);
-			}));
+			return Promise.all(resultingFiles.map(fileName => fs.chmod(path.join(this.dest(), fileName), 0o755)));
 		});
 	}
-};
-
-function flatten(arr) {
-	return arr.reduce((acc, elem) => {
-		if (Array.isArray(elem)) {
-			acc.push(...elem);
-		} else {
-			acc.push(elem);
-		}
-
-		return acc;
-	}, []);
 }

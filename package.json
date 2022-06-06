@@ -10,10 +10,18 @@
 		"url": "https://github.com/kevva"
 	},
 	"engines": {
-		"node": ">=6"
+		"node": "^12.20.0 || ^14.14.0 || >=16.0.0"
 	},
 	"scripts": {
-		"test": "xo && ava"
+		"ava": "ava",
+		"xo": "xo",
+		"test": "npm run xo && npm run ava",
+		"test-ci": "npm run xo && c8 ava"
+	},
+	"main": "index.js",
+	"type": "module",
+	"exports": {
+		".": "./index.js"
 	},
 	"files": [
 		"index.js"
@@ -24,21 +32,26 @@
 		"local",
 		"wrapper"
 	],
+	"c8": {
+		"reporter": [
+			"lcovonly",
+			"text"
+		]
+	},
 	"dependencies": {
 		"bin-check": "^4.1.0",
-		"bin-version-check": "^4.0.0",
-		"download": "^7.1.0",
-		"import-lazy": "^3.1.0",
-		"os-filter-obj": "^2.0.0",
-		"pify": "^4.0.1"
+		"bin-version-check": "^5.0.0",
+		"download": "^8.0.0",
+		"os-filter-obj": "^2.0.0"
 	},
 	"devDependencies": {
-		"ava": "*",
+		"ava": "^4.3.0",
+		"c8": "^7.11.3",
 		"executable": "^4.1.1",
-		"nock": "^10.0.2",
-		"path-exists": "^3.0.0",
-		"rimraf": "^2.6.2",
-		"tempy": "^0.2.1",
-		"xo": "*"
+		"nock": "^13.2.6",
+		"path-exists": "^5.0.0",
+		"rimraf": "^3.0.2",
+		"tempy": "^2.0.0",
+		"xo": "^0.49.0"
 	}
 }

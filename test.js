@@ -1,21 +1,26 @@
-import fs from 'fs';
-import path from 'path';
-import nock from 'nock';
-import pathExists from 'path-exists';
-import pify from 'pify';
-import rimraf from 'rimraf';
-import test from 'ava';
-import tempy from 'tempy';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import {promisify} from 'node:util';
+import {fileURLToPath} from 'node:url';
 import executable from 'executable';
-import Fn from '.';
+import nock from 'nock';
+import {pathExists} from 'path-exists';
+import rimraf from 'rimraf';
+import tempy from 'tempy';
+import test from 'ava';
+import BinWrapper from './index.js';
 
-const rimrafP = pify(rimraf);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const rimrafP = promisify(rimraf);
 const fixture = path.join.bind(path, __dirname, 'fixtures');
 
 test.beforeEach(() => {
 	nock('http://foo.com')
 		.get('/gifsicle.tar.gz')
-		.replyWithFile(200, fixture('gifsicle-' + process.platform + '.tar.gz'))
+		.replyWithFile(200, fixture(`gifsicle-${process.platform}.tar.gz`))
 		.get('/gifsicle-darwin.tar.gz')
 		.replyWithFile(200, fixture('gifsicle-darwin.tar.gz'))
 		.get('/gifsicle-win32.tar.gz')
@@ -25,36 +30,36 @@ test.beforeEach(() => {
 });
 
 test('expose a constructor', t => {
-	t.is(typeof Fn, 'function');
+	t.is(typeof BinWrapper, 'function');
 });
 
 test('add a source', t => {
-	const bin = new Fn().src('http://foo.com/bar.tar.gz');
+	const bin = new BinWrapper().src('http://foo.com/bar.tar.gz');
 	t.is(bin._src[0].url, 'http://foo.com/bar.tar.gz');
 });
 
 test('add a source to a specific os', t => {
-	const bin = new Fn().src('http://foo.com', process.platform);
+	const bin = new BinWrapper().src('http://foo.com', process.platform);
 	t.is(bin._src[0].os, process.platform);
 });
 
 test('set destination directory', t => {
-	const bin = new Fn().dest(path.join(__dirname, 'foo'));
+	const bin = new BinWrapper().dest(path.join(__dirname, 'foo'));
 	t.is(bin._dest, path.join(__dirname, 'foo'));
 });
 
 test('set which file to use as the binary', t => {
-	const bin = new Fn().use('foo');
+	const bin = new BinWrapper().use('foo');
 	t.is(bin._use, 'foo');
 });
 
 test('set a version range to test against', t => {
-	const bin = new Fn().version('1.0.0');
+	const bin = new BinWrapper().version('1.0.0');
 	t.is(bin._version, '1.0.0');
 });
 
 test('get the binary path', t => {
-	const bin = new Fn()
+	const bin = new BinWrapper()
 		.dest('tmp')
 		.use('foo');
 
@@ -62,7 +67,7 @@ test('get the binary path', t => {
 });
 
 test('verify that a binary is working', async t => {
-	const bin = new Fn()
+	const bin = new BinWrapper()
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
@@ -73,7 +78,7 @@ test('verify that a binary is working', async t => {
 });
 
 test('meet the desired version', async t => {
-	const bin = new Fn()
+	const bin = new BinWrapper()
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle')
@@ -85,7 +90,7 @@ test('meet the desired version', async t => {
 });
 
 test('download files even if they are not used', async t => {
-	const bin = new Fn({strip: 0, skipCheck: true})
+	const bin = new BinWrapper({strip: 0, skipCheck: true})
 		.src('http://foo.com/gifsicle-darwin.tar.gz')
 		.src('http://foo.com/gifsicle-win32.tar.gz')
 		.src('http://foo.com/test.js')
@@ -104,7 +109,7 @@ test('download files even if they are not used', async t => {
 });
 
 test('skip running binary check', async t => {
-	const bin = new Fn({skipCheck: true})
+	const bin = new BinWrapper({skipCheck: true})
 		.src('http://foo.com/gifsicle.tar.gz')
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
@@ -115,15 +120,15 @@ test('skip running binary check', async t => {
 });
 
 test('error if no binary is found and no source is provided', async t => {
-	const bin = new Fn()
+	const bin = new BinWrapper()
 		.dest(tempy.directory())
 		.use(process.platform === 'win32' ? 'gifsicle.exe' : 'gifsicle');
 
-	await t.throws(bin.run(), 'No binary found matching your system. It\'s probably not supported.');
+	await t.throwsAsync(bin.run(), undefined, 'No binary found matching your system. It\'s probably not supported.');
 });
 
 test('downloaded files are set to be executable', async t => {
-	const bin = new Fn({strip: 0, skipCheck: true})
+	const bin = new BinWrapper({strip: 0, skipCheck: true})
 		.src('http://foo.com/gifsicle-darwin.tar.gz')
 		.src('http://foo.com/gifsicle-win32.tar.gz')
 		.src('http://foo.com/test.js')
@@ -134,7 +139,7 @@ test('downloaded files are set to be executable', async t => {
 
 	const files = fs.readdirSync(bin.dest());
 
-	files.forEach(fileName => {
+	for (const fileName of files) {
 		t.true(executable.sync(path.join(bin.dest(), fileName)));
-	});
+	}
 });
