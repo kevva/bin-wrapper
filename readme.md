@@ -17,6 +17,9 @@ const BinWrapper = require('bin-wrapper');
 
 const base = 'https://github.com/imagemin/gifsicle-bin/raw/master/vendor';
 const bin = new BinWrapper()
+	.localSrc(`vendor/macos/gifsicle`, 'darwin')
+	.localSrc(`vendor/linux/x64/gifsicle`, 'linux', 'x64')
+	.localSrc(`vendor/win/x64/gifsicle.exe`, 'win32', 'x64')
 	.src(`${base}/macos/gifsicle`, 'darwin')
 	.src(`${base}/linux/x64/gifsicle`, 'linux', 'x64')
 	.src(`${base}/win/x64/gifsicle.exe`, 'win32', 'x64')
@@ -84,13 +87,23 @@ Type: `string`
 
 Tie the source to a specific arch.
 
+### .localSrc(filepath, [os], [arch])
+
+Same as `.src()`, but adds a local source to copy, before trying any downloads.
+
+#### filepath
+
+Type: `string`
+
+Accepts a filepath pointing to a local file.
+
 ### .dest(destination)
 
 #### destination
 
 Type: `string`
 
-Accepts a path which the files will be downloaded to.
+Accepts a path which the files will be copied/downloaded to.
 
 ### .use(binary)
 

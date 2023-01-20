@@ -12,6 +12,8 @@ const osFilterObj = importLazy('os-filter-obj');
 
 const statAsync = pify(fs.stat);
 const chmodAsync = pify(fs.chmod);
+const lstatAsync = pify(fs.lstat);
+const copyFileAsync = pify(fs.copyFile);
 
 /**
  * Initialize a new `BinWrapper`
@@ -28,6 +30,29 @@ module.exports = class BinWrapper {
 		} else if (!this.options.strip) {
 			this.options.strip = 1;
 		}
+	}
+
+	/**
+	 * Get or set local files to use before download
+	 *
+	 * @param {String} src
+	 * @param {String} os
+	 * @param {String} arch
+	 * @api public
+	 */
+	localSrc(src, os, arch) {
+		if (arguments.length === 0) {
+			return this._localSrc;
+		}
+
+		this._localSrc = this._localSrc || [];
+		this._localSrc.push({
+			url: src,
+			os,
+			arch
+		});
+
+		return this;
 	}
 
 	/**
@@ -151,11 +176,42 @@ module.exports = class BinWrapper {
 	findExisting() {
 		return statAsync(this.path()).catch(error => {
 			if (error && error.code === 'ENOENT') {
-				return this.download();
+				return this.copyLocal().catch(() => this.download());
 			}
 
 			return Promise.reject(error);
 		});
+	}
+
+	/**
+	 * Copying local files
+	 *
+	 * @api private
+	 */
+	copyLocal() {
+		const files = osFilterObj(this.localSrc() || []);
+		const urls = [];
+
+		if (files.length === 0) {
+			return Promise.reject(new Error('No binary found matching your system. It\'s probably not supported.'));
+		}
+
+		files.forEach(file => urls.push(file.url));
+
+		return Promise.all(urls.map(url => lstatAsync(url).then(stats => {
+			if (stats.isDirectory()) {
+				return Promise.reject(new Error('Local source path is a directory.'));
+			}
+			if (stats.isSymbolicLink()) {
+				return Promise.reject(new Error('Local source path is a symbolic link.'));
+			}
+			if (!stats.isFile()) {
+				return Promise.reject(new Error('Local source path is not a file.'));
+			}
+
+			return copyFileAsync(url, path.join(this.dest(), path.basename(url)))
+			.then(() => chmodAsync(path.join(this.dest(), fileName), 0o755));
+		})));
 	}
 
 	/**
