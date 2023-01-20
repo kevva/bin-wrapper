@@ -9,18 +9,6 @@
 		"email": "kevinmartensson@gmail.com",
 		"url": "https://github.com/kevva"
 	},
-	"contributors": [
-		{
-			"name": "Kevin Mårtensson",
-			"email": "kevinmartensson@gmail.com",
-			"url": "https://github.com/kevva"
-		},
-		{
-			"name": "Philip van Heemstra",
-			"email": "vanheemstra@gmail.com",
-			"url": "https://github.com/vheemstra"
-		}
-	],
 	"engines": {
 		"node": ">=6"
 	},
